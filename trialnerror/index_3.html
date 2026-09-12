@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Flip — 5초 복습</title>
+<link rel="stylesheet" as="style" crossorigin
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+  :root{
+    --bg-1:#221630;
+    --bg-2:#3a2255;
+    --paper:#faf6ef;
+    --ink:#2a2138;
+    --ink-soft:#6b6178;
+    --back:#2a1b42;
+    --amber:#f2b84b;
+    --amber-soft:#f2b84b99;
+    --know:#9cb380;
+    --review:#e36b6b;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%;
+    font-family:'Pretendard', -apple-system, sans-serif;
+    background:radial-gradient(circle at 30% 20%, var(--bg-2), var(--bg-1) 70%);
+    overflow:hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .screen{
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    padding:16px;
+  }
+
+  /* 최상단 브랜드 + 진행도 */
+  .header{
+    position:absolute;
+    top:18px; left:0; right:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:5px;
+    padding:0 20px;
+    text-align:center;
+  }
+  .brand{ font-size:14px; font-weight:700; color:#ffffffd0; }
+  .progress{ font-size:12px; color:#ffffff88; font-weight:500; }
+  .review-count{ font-size:11px; color:var(--review); opacity:0.9; }
+
+  /* 최하단 크레딧 */
+  .footer{
+    position:absolute;
+    bottom:12px; right:16px;
+    font-size:11px;
+    color:#ffffff50;
+    font-weight:500;
+  }
+
+  /* 카드 + 좌우 이전/다음 버튼을 한 줄에 */
+  .stage-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    width:100%;
+  }
+  .side-btn{
+    flex:0 0 auto;
+    width:42px; height:42px;
+    border-radius:50%;
+    border:1px solid #ffffff33;
+    background:#ffffff11;
+    color:#fff;
+    font-size:18px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .side-btn:active{ background:#ffffff22; }
+  .side-btn:disabled{ opacity:0.25; cursor:default; }
+  .side-btn:disabled:active{ background:#ffffff11; }
+
+  .stage{
+    flex:1 1 auto;
+    width:100%;
+    max-width:300px;
+    aspect-ratio: 3 / 4;
+    perspective:1400px;
+    touch-action: none;
+  }
+  .card{
+    position:relative;
+    width:100%; height:100%;
+    transform-style:preserve-3d;
+    transition:transform 0.55s cubic-bezier(.2,.8,.2,1), opacity 0.4s ease;
+    cursor:pointer;
+    will-change:transform;
+  }
+  .card.flipped{ transform:rotateY(180deg); }
+  .card.dragging{ transition:none; }
+  .card.gone{ transition:transform 0.4s ease, opacity 0.4s ease; opacity:0; }
+  .face{
+    position:absolute; inset:0;
+    backface-visibility:hidden;
+    border-radius:20px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    padding:36px 28px;
+    text-align:center;
+    box-shadow:0 20px 50px -12px rgba(0,0,0,0.5);
+  }
+  .face-front{ background:var(--paper); color:var(--ink); }
+  .face-back{ background:var(--back); color:var(--amber); transform:rotateY(180deg); }
+  .kicker{ font-size:12px; font-weight:600; letter-spacing:0.06em; margin-bottom:16px; }
+  .face-front .kicker{ color:var(--ink-soft); }
+  .face-back .kicker{ color:var(--amber-soft); }
+  .qa-text{ font-size:20px; font-weight:700; line-height:1.45; }
+  .face-back .qa-text{ font-weight:600; }
+
+  .stamp{
+    position:absolute; top:22px;
+    padding:7px 14px; border-radius:10px; border:3px solid;
+    font-weight:800; font-size:14px; letter-spacing:0.03em;
+    opacity:0; transform:rotate(-12deg); pointer-events:none;
+  }
+  .stamp-know{ left:18px; color:var(--know); border-color:var(--know); }
+  .stamp-review{ right:18px; color:var(--review); border-color:var(--review); transform:rotate(12deg); }
+
+  .hint{
+    margin-top:18px; font-size:12px; color:#ffffffaa;
+    text-align:center; line-height:1.6; transition:opacity 1s ease;
+  }
+  .hint.hidden{ opacity:0; }
+
+  /* 하단 알고있음 / 복습 */
+  .nav{ display:flex; gap:16px; margin-top:20px; }
+  .nav button{
+    padding:12px 24px; border-radius:14px;
+    border:1px solid #ffffff33; background:#ffffff11;
+    color:#fff; font-size:13.5px; font-weight:600; cursor:pointer;
+  }
+  .nav button:active{ background:#ffffff22; }
+  .nav .btn-know{ color:var(--know); border-color:#9cb38055; }
+  .nav .btn-review{ color:var(--review); border-color:#e36b6b55; }
+
+  .reset-btn{
+    margin-top:14px;
+    background:none; border:none;
+    color:#ffffff66; font-size:12px; font-weight:500;
+    cursor:pointer; text-decoration:underline; text-underline-offset:3px;
+  }
+  .reset-btn:active{ color:#ffffff99; }
+
+  .done-screen{
+    display:none; flex-direction:column; align-items:center; text-align:center; color:#fff;
+  }
+  .done-screen.show{ display:flex; }
+  .done-screen h2{ font-size:24px; margin-bottom:10px; }
+  .done-screen p{ color:#ffffff99; font-size:14px; margin-bottom:24px; }
+  .restart-btn{
+    padding:12px 28px; border-radius:14px; border:none;
+    background:var(--amber); color:#2a1b42; font-weight:700; font-size:14px; cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+  <div class="screen">
+    <div class="header">
+      <div class="brand">Flip: 5 minutes to take control of your life</div>
+      <div class="progress" id="progress">1 / 14</div>
+      <div class="review-count" id="reviewCount"></div>
+    </div>
+
+    <div class="stage-row">
+      <button class="side-btn" id="prevBtn" disabled aria-label="이전 카드">‹</button>
+
+      <div class="stage" id="stage">
+        <div class="card" id="card">
+          <div class="stamp stamp-know" id="stampKnow">알고있음 ✓</div>
+          <div class="stamp stamp-review" id="stampReview">복습 ↻</div>
+          <div class="face face-front">
+            <div class="kicker">Q</div>
+            <div class="qa-text" id="qText"></div>
+          </div>
+          <div class="face face-back">
+            <div class="kicker">A</div>
+            <div class="qa-text" id="aText"></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="side-btn" id="nextBtn" aria-label="다음 카드">›</button>
+    </div>
+
+    <div class="done-screen" id="doneScreen">
+      <h2>오늘의 복습 완료!</h2>
+      <p>14장 모두 "알고있음"으로 넘겼어요.</p>
+      <button class="restart-btn" id="restartBtn">다시 처음부터</button>
+    </div>
+
+    <div class="hint" id="hint">탭해서 답 보기 · 스와이프 ← 알고있음 · → 복습 · ↓ 다음</div>
+
+    <div class="nav" id="navButtons">
+      <button class="btn-know" id="knowBtn">알고있음</button>
+      <button class="btn-review" id="reviewBtn">복습</button>
+    </div>
+
+    <button class="reset-btn" id="resetBtn">초기화</button>
+
+    <div class="footer">2026. ReclaimLab Inc.</div>
+  </div>
+
+<script>
+  // 카드 데이터 (하드코딩 DB)
+  const cardData = [
+    { q: "AI 시대에 경쟁력은 무엇으로 이동했는가?", a: '"얼마나 아는가"에서 "무엇을 해결하는가"로' },
+    { q: "LLM(대규모 언어모델)이란 무엇인가?", a: "언어를 입력과 출력의 인터페이스로 쓰는 대규모 생성 모델" },
+    { q: "LLM은 어떻게 답을 만드는가?", a: "맥락을 바탕으로 다음에 올 확률 높은 토큰을 반복 예측해서 생성" },
+    { q: "AI 시대의 학습 루프는?", a: "Do → Fail → Ask → Learn (실행 → 실패 → 질문 → 학습)" },
+    { q: "좋은 프롬프트의 5요소는?", a: "Context, Goal, Constraint, Output, Criteria" },
+    { q: "AI에게 맡길 수 없는 것 3가지는?", a: "목적 결정, 가치 판단, 최종 책임·검증" },
+    { q: "바이브 코딩이란?", a: "AI에게 원하는 걸 설명하고 대화하며 만들어가는 방식" },
+    { q: "바이브 코딩에서 가장 어려운 것은?", a: "코드 작성이 아니라 '무엇을 만들지 정확히 아는 것'" },
+    { q: "5 Whys 기법이란?", a: "'왜?'를 5번 반복해서 물어 진짜 문제를 찾는 방법" },
+    { q: "코닥 실패의 핵심 키워드는?", a: "자기잠식 — 기술은 있었지만 필름 매출 보호로 묵혀둠" },
+    { q: "넷플릭스 성공의 핵심 키워드는?", a: "Self-disruption — 잘되는 사업을 스스로 축소하고 전환" },
+    { q: "옵시디언 DB화의 3대 요소는?", a: "폴더(어디에), Properties(무엇인지), 링크(무엇과 연결)" },
+    { q: "옵시디언 파일명 규칙은?", a: "실제 부르는 이름 그대로. 날짜·상태는 제목 아닌 Properties에" },
+    { q: "Bases란?", a: "노트의 Properties를 모아 표·카드 형태 DB 화면으로 보여주는 기능" }
+  ];
+
+  // queue: 남은 카드들의 인덱스. 앞에서 하나씩 꺼내 보여준다.
+  //  - 알고있음: 완전히 제거 (다시 안 돌아옴)
+  //  - 복습/다음: 맨 뒤로 다시 넣음 (한 바퀴 돌고 재등장)
+  let queue = cardData.map((_, i) => i);
+  const totalCount = cardData.length;
+  let flipped = false;
+  let reviewMarked = new Set();   // '복습'으로 표시된 카드 (이전 이동 시 제외 대상)
+  let skipHistory = [];           // '다음'으로 넘긴 카드만 기록 (이전 이동의 대상)
+  let hintShown = true;
+
+  const cardEl = document.getElementById('card');
+  const stageEl = document.getElementById('stage');
+  const qText = document.getElementById('qText');
+  const aText = document.getElementById('aText');
+  const progressEl = document.getElementById('progress');
+  const reviewCountEl = document.getElementById('reviewCount');
+  const hintEl = document.getElementById('hint');
+  const doneScreen = document.getElementById('doneScreen');
+  const navButtons = document.getElementById('navButtons');
+  const stampKnow = document.getElementById('stampKnow');
+  const stampReview = document.getElementById('stampReview');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+
+  function currentCard(){
+    return cardData[queue[0]];
+  }
+
+  function updatePrevButtonState(){
+    const hasValidHistory = skipHistory.some(i => !reviewMarked.has(i) && queue.includes(i));
+    prevBtn.disabled = !hasValidHistory;
+  }
+
+  function render(){
+    if(queue.length === 0){
+      document.querySelector('.stage-row').style.display = 'none';
+      navButtons.style.display = 'none';
+      hintEl.style.display = 'none';
+      doneScreen.classList.add('show');
+      return;
+    }
+    const c = currentCard();
+    qText.textContent = c.q;
+    aText.textContent = c.a;
+    progressEl.textContent = (totalCount - queue.length + 1) + ' / ' + totalCount;
+    reviewCountEl.textContent = reviewMarked.size > 0 ? ('복습 표시 ' + reviewMarked.size + '장') : '';
+    cardEl.classList.remove('flipped');
+    cardEl.style.transform = '';
+    cardEl.style.opacity = '';
+    flipped = false;
+    updatePrevButtonState();
+  }
+
+  function dismissHint(){
+    if(hintShown){
+      hintShown = false;
+      hintEl.classList.add('hidden');
+    }
+  }
+
+  function toggleFlip(){
+    flipped = !flipped;
+    cardEl.classList.toggle('flipped', flipped);
+    dismissHint();
+  }
+
+  // action: 'know' | 'review' | 'skip'
+  function resolveCard(action){
+    dismissHint();
+    const idx = queue.shift();
+
+    if(action === 'know'){
+      // 완전히 제거
+    } else if(action === 'review'){
+      reviewMarked.add(idx);
+      queue.push(idx);
+    } else {
+      queue.push(idx);
+      skipHistory.push(idx); // '이전' 이동의 대상은 스킵된 카드만
+    }
+
+    cardEl.classList.add('gone');
+    let exitX = action === 'know' ? -500 : (action === 'review' ? 500 : 0);
+    let exitY = action === 'skip' ? 400 : 0;
+    cardEl.style.transform = `translate(${exitX}px, ${exitY}px) rotate(${exitX/20}deg)`;
+
+    setTimeout(() => {
+      cardEl.classList.remove('gone', 'dragging');
+      stampKnow.style.opacity = 0;
+      stampReview.style.opacity = 0;
+      render();
+    }, 260);
+  }
+
+  function goPrevious(){
+    dismissHint();
+    while(skipHistory.length){
+      const idx = skipHistory.pop();
+      if(reviewMarked.has(idx)) continue;      // 복습으로 표시된 카드는 제외
+      const pos = queue.indexOf(idx);
+      if(pos === -1) continue;                 // 이미 큐에서 사라진 카드(알고있음)는 제외
+
+      queue.splice(pos, 1);
+      queue.unshift(idx);
+
+      cardEl.style.transition = 'none';
+      cardEl.style.transform = 'translateX(-50px)';
+      cardEl.style.opacity = '0';
+      render();
+      requestAnimationFrame(() => {
+        cardEl.style.transition = 'transform 0.35s ease, opacity 0.35s ease';
+        cardEl.style.transform = '';
+        cardEl.style.opacity = '1';
+      });
+      return;
+    }
+    updatePrevButtonState();
+  }
+
+  cardEl.addEventListener('click', () => {
+    if(dragMoved) return;
+    toggleFlip();
+  });
+
+  document.getElementById('knowBtn').addEventListener('click', () => resolveCard('know'));
+  document.getElementById('reviewBtn').addEventListener('click', () => resolveCard('review'));
+  nextBtn.addEventListener('click', () => resolveCard('skip'));
+  prevBtn.addEventListener('click', () => { if(!prevBtn.disabled) goPrevious(); });
+
+  function resetDeck(){
+    queue = cardData.map((_, i) => i);
+    reviewMarked = new Set();
+    skipHistory = [];
+    document.querySelector('.stage-row').style.display = '';
+    navButtons.style.display = '';
+    hintEl.style.display = '';
+    doneScreen.classList.remove('show');
+    render();
+  }
+
+  document.getElementById('restartBtn').addEventListener('click', resetDeck);
+  document.getElementById('resetBtn').addEventListener('click', resetDeck);
+
+  // --- 스와이프 처리 ---
+  let startX = 0, startY = 0, dx = 0, dy = 0, dragging = false, dragMoved = false;
+
+  function onStart(x, y){
+    dragging = true;
+    dragMoved = false;
+    startX = x; startY = y;
+    dx = 0; dy = 0;
+    cardEl.classList.add('dragging');
+  }
+
+  function onMove(x, y){
+    if(!dragging) return;
+    dx = x - startX;
+    dy = y - startY;
+    if(Math.abs(dx) > 6 || Math.abs(dy) > 6) dragMoved = true;
+
+    const rot = dx / 20;
+    cardEl.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg) ${flipped ? 'rotateY(180deg)' : ''}`;
+
+    if(Math.abs(dx) > Math.abs(dy)){
+      stampKnow.style.opacity = dx < 0 ? Math.min(Math.abs(dx)/100, 1) : 0;
+      stampReview.style.opacity = dx > 0 ? Math.min(dx/100, 1) : 0;
+    } else {
+      stampKnow.style.opacity = 0;
+      stampReview.style.opacity = 0;
+    }
+  }
+
+  function onEnd(){
+    if(!dragging) return;
+    dragging = false;
+    cardEl.classList.remove('dragging');
+
+    const horizontal = Math.abs(dx) > Math.abs(dy);
+
+    if(horizontal && dx < -80){
+      resolveCard('know');
+    } else if(horizontal && dx > 80){
+      resolveCard('review');
+    } else if(!horizontal && dy > 80){
+      resolveCard('skip');
+    } else {
+      cardEl.style.transform = '';
+      stampKnow.style.opacity = 0;
+      stampReview.style.opacity = 0;
+    }
+    setTimeout(() => { dragMoved = false; }, 50);
+  }
+
+  stageEl.addEventListener('touchstart', (e) => onStart(e.touches[0].clientX, e.touches[0].clientY), {passive:true});
+  stageEl.addEventListener('touchmove', (e) => onMove(e.touches[0].clientX, e.touches[0].clientY), {passive:true});
+  stageEl.addEventListener('touchend', onEnd);
+
+  stageEl.addEventListener('mousedown', (e) => onStart(e.clientX, e.clientY));
+  window.addEventListener('mousemove', (e) => { if(dragging) onMove(e.clientX, e.clientY); });
+  window.addEventListener('mouseup', onEnd);
+
+  render();
+</script>
+
+</body>
+</html>
