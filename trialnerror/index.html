@@ -18,6 +18,7 @@
     --amber-soft:#f2b84b99;
     --know:#9cb380;
     --review:#e36b6b;
+    --line:#ffffff1c;
   }
   *{box-sizing:border-box;}
   html,body{
@@ -32,30 +33,75 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    justify-content:center;
+    justify-content:flex-start;
     position:relative;
-    padding:16px;
+    padding:calc(16px + env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom));
+    overflow:hidden;
   }
 
-  /* 최상단 브랜드 + 진행도 */
   .header{
-    position:absolute;
-    top:18px; left:0; right:0;
+    width:100%;
+    max-width:430px;
     display:flex;
-    flex-direction:column;
     align-items:center;
-    gap:5px;
-    padding:0 20px;
-    text-align:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:4px 2px 0;
+    text-align:left;
   }
-  .brand{ font-size:14px; font-weight:700; color:#ffffffd0; }
-  .progress{ font-size:12px; color:#ffffff88; font-weight:500; }
-  .review-count{ font-size:11px; color:var(--review); opacity:0.9; }
+  .header-actions{ display:flex; align-items:center; gap:10px; }
+  .menu-toggle{
+    width:38px; height:38px; border:1px solid #ffffff2b; border-radius:12px;
+    background:#ffffff0d; color:#fff; font-size:19px; line-height:1; cursor:pointer;
+  }
+  .menu-toggle:active{ background:#ffffff1c; }
+  .brand-wrap{ display:flex; flex-direction:column; gap:4px; min-width:0; }
+  .brand{ font-size:clamp(15px, 4.4vw, 18px); font-weight:800; color:#fff; letter-spacing:-0.02em; white-space:nowrap; }
+  .brand-subtitle{ font-size:clamp(9px, 2.8vw, 11px); color:#ffffff70; font-weight:500; line-height:1.3; max-width:clamp(150px, 48vw, 250px); }
+  .progress-wrap{ display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex:0 0 auto; }
+  .progress{ font-size:12px; color:#fff; font-weight:700; }
+  .progress-label{ font-size:10px; color:#ffffff5c; text-transform:uppercase; letter-spacing:0.08em; }
+  .review-count{ position:absolute; top:62px; left:50%; transform:translateX(-50%); font-size:11px; color:var(--review); opacity:0.9; white-space:nowrap; }
+
+  .session-bar{
+    width:100%; max-width:430px;
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:clamp(28px, 7vh, 58px);
+    color:#ffffff6e; font-size:11px;
+  }
+  .session-bar::before{ content:''; width:6px; height:6px; border-radius:50%; background:var(--amber); box-shadow:0 0 0 4px #f2b84b20; }
+  .session-label{ margin-right:auto; margin-left:9px; }
+  .session-time{ color:#ffffffa0; font-weight:700; }
+  .generate-open{
+    border:1px solid #f2b84b66; border-radius:999px; background:#f2b84b18;
+    color:var(--amber); padding:7px 11px; font:inherit; font-size:11px; font-weight:700;
+    cursor:pointer;
+  }
+  .generate-open:active{ background:#f2b84b30; }
+
+  .menu-layer{
+    position:fixed; inset:0; z-index:8; background:#120b1a66;
+    opacity:0; pointer-events:none; transition:opacity .2s ease;
+  }
+  .menu-layer.show{ opacity:1; pointer-events:auto; }
+  .app-menu{
+    position:absolute; top:calc(62px + env(safe-area-inset-top)); right:12px;
+    width:min(270px, calc(100vw - 24px)); padding:10px;
+    border:1px solid var(--line); border-radius:18px; background:#302044;
+    box-shadow:0 18px 50px #120b1acc; transform:translateY(-8px); transition:transform .2s ease;
+  }
+  .menu-layer.show .app-menu{ transform:translateY(0); }
+  .menu-heading{ padding:8px 10px 10px; color:#ffffff66; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+  .menu-item{ display:flex; width:100%; align-items:center; justify-content:space-between; gap:12px; padding:12px 10px; border:0; border-radius:10px; background:transparent; color:#fff; font:inherit; font-size:13px; text-align:left; cursor:pointer; }
+  .menu-item:hover,.menu-item:active{ background:#ffffff12; }
+  .menu-item span{ color:#ffffff4d; font-size:11px; }
+  .menu-item-primary{ color:var(--amber); }
+  .menu-notice{ min-height:16px; padding:5px 10px 2px; color:#ffffff70; font-size:11px; line-height:1.4; }
 
   /* 최하단 크레딧 */
   .footer{
-    position:absolute;
-    bottom:12px; right:16px;
+    margin-top:auto;
+    padding-top:14px;
     font-size:11px;
     color:#ffffff50;
     font-weight:500;
@@ -66,12 +112,14 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    gap:12px;
+    gap:clamp(6px, 3vw, 18px);
     width:100%;
+    max-width:480px;
+    margin-top:clamp(16px, 3vh, 28px);
   }
   .side-btn{
     flex:0 0 auto;
-    width:42px; height:42px;
+    width:clamp(34px, 11vw, 42px); height:clamp(34px, 11vw, 42px);
     border-radius:50%;
     border:1px solid #ffffff33;
     background:#ffffff11;
@@ -85,9 +133,9 @@
   .side-btn:disabled:active{ background:#ffffff11; }
 
   .stage{
-    flex:1 1 auto;
-    width:100%;
-    max-width:300px;
+    flex:0 1 auto;
+    width:min(76vw, 380px, calc(100vw - 86px));
+    min-width:0;
     aspect-ratio: 3 / 4;
     perspective:1400px;
     touch-action: none;
@@ -106,12 +154,12 @@
   .face{
     position:absolute; inset:0;
     backface-visibility:hidden;
-    border-radius:20px;
+    border-radius:clamp(16px, 5vw, 24px);
     display:flex;
     flex-direction:column;
     justify-content:center;
     align-items:center;
-    padding:36px 28px;
+    padding:clamp(24px, 8vw, 44px) clamp(20px, 7vw, 38px);
     text-align:center;
     box-shadow:0 20px 50px -12px rgba(0,0,0,0.5);
   }
@@ -120,7 +168,7 @@
   .kicker{ font-size:12px; font-weight:600; letter-spacing:0.06em; margin-bottom:16px; }
   .face-front .kicker{ color:var(--ink-soft); }
   .face-back .kicker{ color:var(--amber-soft); }
-  .qa-text{ font-size:20px; font-weight:700; line-height:1.45; }
+  .qa-text{ font-size:clamp(17px, 5.2vw, 23px); font-weight:700; line-height:1.45; overflow-wrap:anywhere; }
   .face-back .qa-text{ font-weight:600; }
 
   .stamp{
@@ -133,15 +181,16 @@
   .stamp-review{ right:18px; color:var(--review); border-color:var(--review); transform:rotate(12deg); }
 
   .hint{
-    margin-top:18px; font-size:12px; color:#ffffffaa;
+    width:min(100%, 380px);
+    margin-top:clamp(12px, 2.5vh, 20px); font-size:12px; color:#ffffffaa;
     text-align:center; line-height:1.6; transition:opacity 1s ease;
   }
   .hint.hidden{ opacity:0; }
 
   /* 하단 알고있음 / 복습 */
-  .nav{ display:flex; gap:16px; margin-top:20px; }
+  .nav{ display:grid; grid-template-columns:1fr 1fr; width:min(100%, 380px); gap:10px; margin-top:clamp(14px, 2.5vh, 22px); }
   .nav button{
-    padding:12px 24px; border-radius:14px;
+    min-height:48px; padding:12px 16px; border-radius:14px;
     border:1px solid #ffffff33; background:#ffffff11;
     color:#fff; font-size:13.5px; font-weight:600; cursor:pointer;
   }
@@ -150,7 +199,7 @@
   .nav .btn-review{ color:var(--review); border-color:#e36b6b55; }
 
   .reset-btn{
-    margin-top:14px;
+    margin-top:12px;
     background:none; border:none;
     color:#ffffff66; font-size:12px; font-weight:500;
     cursor:pointer; text-decoration:underline; text-underline-offset:3px;
@@ -167,15 +216,83 @@
     padding:12px 28px; border-radius:14px; border:none;
     background:var(--amber); color:#2a1b42; font-weight:700; font-size:14px; cursor:pointer;
   }
+
+  .generator{
+    position:fixed; inset:0; z-index:10; display:flex; align-items:flex-end;
+    background:#120b1acc; opacity:0; pointer-events:none; transition:opacity .2s ease;
+  }
+  .generator.show{ opacity:1; pointer-events:auto; }
+  .generator-sheet{
+    width:100%; max-width:480px; margin:0 auto; padding:22px 18px calc(20px + env(safe-area-inset-bottom));
+    border:1px solid var(--line); border-bottom:0; border-radius:24px 24px 0 0;
+    background:#302044; box-shadow:0 -20px 60px #120b1a88;
+    transform:translateY(24px); transition:transform .25s ease;
+  }
+  .generator.show .generator-sheet{ transform:translateY(0); }
+  .generator-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+  .generator-title{ margin:0; color:#fff; font-size:20px; line-height:1.2; }
+  .generator-copy{ margin:7px 0 18px; color:#ffffff99; font-size:12px; line-height:1.5; }
+  .generator-close{ border:0; background:#ffffff10; color:#fff; width:32px; height:32px; border-radius:50%; font-size:20px; cursor:pointer; }
+  .generator textarea{
+    display:block; width:100%; min-height:112px; resize:vertical; border:1px solid #ffffff24; border-radius:14px;
+    padding:13px; background:#1f1530; color:#fff; font:inherit; font-size:14px; line-height:1.5; outline:none;
+  }
+  .generator textarea:focus{ border-color:#f2b84b99; box-shadow:0 0 0 3px #f2b84b18; }
+  .generator textarea::placeholder{ color:#ffffff55; }
+  .generator-examples{ display:flex; gap:7px; overflow-x:auto; margin:10px 0 14px; padding-bottom:2px; }
+  .example-chip{ flex:0 0 auto; border:1px solid #ffffff1c; border-radius:999px; background:#ffffff0b; color:#ffffffaa; padding:7px 10px; font:inherit; font-size:11px; cursor:pointer; }
+  .generate-submit{ width:100%; min-height:48px; border:0; border-radius:14px; background:var(--amber); color:#2a1b42; font:inherit; font-weight:800; cursor:pointer; }
+  .generate-submit:disabled{ opacity:.6; cursor:wait; }
+  .generator-status{ min-height:18px; margin:10px 2px 0; color:#ffffff88; font-size:11px; text-align:center; }
+
+  @media (max-height: 680px){
+    .session-bar{ margin-top:18px; }
+    .stage-row{ margin-top:12px; }
+    .hint{ margin-top:9px; }
+    .nav{ margin-top:10px; }
+    .reset-btn{ margin-top:7px; }
+  }
+  @media (max-width: 340px){
+    .screen{ padding-left:12px; padding-right:12px; }
+    .brand{ font-size:14px; }
+    .brand-subtitle{ max-width:145px; }
+    .stage-row{ gap:4px; }
+    .side-btn{ font-size:16px; }
+    .nav button{ font-size:12px; padding-left:8px; padding-right:8px; }
+    .generate-open{ padding-left:8px; padding-right:8px; }
+  }
+  @media (orientation: landscape) and (max-height: 600px){
+    .session-bar{ margin-top:10px; }
+    .stage-row{ margin-top:8px; }
+    .stage{ width:min(60vw, 300px, calc((100dvh - 172px) * .75)); }
+    .hint{ margin-top:8px; }
+    .nav{ margin-top:8px; }
+    .reset-btn{ margin-top:5px; }
+    .footer{ display:none; }
+  }
 </style>
 </head>
 <body>
 
   <div class="screen">
     <div class="header">
-      <div class="brand">Flip: 5 minutes to take control of your life</div>
-      <div class="progress" id="progress">1 / 14</div>
+      <div class="brand-wrap">
+        <div class="brand">Flip</div>
+        <div class="brand-subtitle">5 minutes to take control of your life</div>
+      </div>
+      <div class="header-actions">
+        <div class="progress-wrap">
+          <div class="progress" id="progress">1 / 14</div>
+          <div class="progress-label">progress</div>
+        </div>
+        <button class="menu-toggle" id="menuToggle" aria-label="전체 메뉴 열기" aria-expanded="false">☰</button>
+      </div>
       <div class="review-count" id="reviewCount"></div>
+    </div>
+
+    <div class="session-bar">
+      <span class="session-label">오늘의 집중 세션</span>
+      <span class="session-time">5 min</span>
     </div>
 
     <div class="stage-row">
@@ -217,9 +334,41 @@
     <div class="footer">2026. ReclaimLab Inc.</div>
   </div>
 
+  <div class="menu-layer" id="menuLayer" aria-hidden="true">
+    <nav class="app-menu" aria-label="전체 메뉴">
+      <div class="menu-heading">Flip menu</div>
+      <button class="menu-item" data-menu-action="login">로그인 <span>계정 연결</span></button>
+      <button class="menu-item" data-menu-action="create-stack">새 스택 만들기 <span>준비 중</span></button>
+      <button class="menu-item" data-menu-action="view-stacks">전체 스택 보기 <span>준비 중</span></button>
+      <button class="menu-item menu-item-primary" data-menu-action="generate">AI 카드 만들기 <span>새 카드</span></button>
+      <button class="menu-item" data-menu-action="settings">설정 <span>준비 중</span></button>
+      <div class="menu-notice" id="menuNotice" role="status"></div>
+    </nav>
+  </div>
+
+  <div class="generator" id="generator" aria-hidden="true">
+    <section class="generator-sheet" role="dialog" aria-modal="true" aria-labelledby="generatorTitle">
+      <div class="generator-head">
+        <div>
+          <h2 class="generator-title" id="generatorTitle">AI 카드 만들기</h2>
+          <p class="generator-copy">주제나 노트를 넣으면 바로 복습할 수 있는 카드 초안을 만들어요.</p>
+        </div>
+        <button class="generator-close" id="generatorCloseBtn" aria-label="카드 만들기 닫기">×</button>
+      </div>
+      <textarea id="generatorInput" placeholder="예: 프롬프트 엔지니어링의 핵심을 복습하고 싶어"></textarea>
+      <div class="generator-examples" aria-label="추천 주제">
+        <button class="example-chip" data-prompt="회의를 더 잘하는 방법">회의 운영</button>
+        <button class="example-chip" data-prompt="자바스크립트 비동기 처리">JavaScript</button>
+        <button class="example-chip" data-prompt="나의 이번 주 독서 노트">독서 노트</button>
+      </div>
+      <button class="generate-submit" id="generateSubmit">카드 5장 생성하기</button>
+      <div class="generator-status" id="generatorStatus" role="status"></div>
+    </section>
+  </div>
+
 <script>
   // 카드 데이터 (하드코딩 DB)
-  const cardData = [
+  let cardData = [
     { q: "AI 시대에 경쟁력은 무엇으로 이동했는가?", a: '"얼마나 아는가"에서 "무엇을 해결하는가"로' },
     { q: "LLM(대규모 언어모델)이란 무엇인가?", a: "언어를 입력과 출력의 인터페이스로 쓰는 대규모 생성 모델" },
     { q: "LLM은 어떻게 답을 만드는가?", a: "맥락을 바탕으로 다음에 올 확률 높은 토큰을 반복 예측해서 생성" },
@@ -240,7 +389,7 @@
   //  - 알고있음: 완전히 제거 (다시 안 돌아옴)
   //  - 복습/다음: 맨 뒤로 다시 넣음 (한 바퀴 돌고 재등장)
   let queue = cardData.map((_, i) => i);
-  const totalCount = cardData.length;
+  let totalCount = cardData.length;
   let flipped = false;
   let reviewMarked = new Set();   // '복습'으로 표시된 카드 (이전 이동 시 제외 대상)
   let skipHistory = [];           // '다음'으로 넘긴 카드만 기록 (이전 이동의 대상)
@@ -259,6 +408,13 @@
   const stampReview = document.getElementById('stampReview');
   const prevBtn = document.getElementById('prevBtn');
   const nextBtn = document.getElementById('nextBtn');
+  const generator = document.getElementById('generator');
+  const generatorInput = document.getElementById('generatorInput');
+  const generatorStatus = document.getElementById('generatorStatus');
+  const generateSubmit = document.getElementById('generateSubmit');
+  const menuLayer = document.getElementById('menuLayer');
+  const menuToggle = document.getElementById('menuToggle');
+  const menuNotice = document.getElementById('menuNotice');
 
   function currentCard(){
     return cardData[queue[0]];
@@ -355,6 +511,79 @@
     updatePrevButtonState();
   }
 
+  function createGeneratedCards(topic){
+    const subject = topic.replace(/[.!?]+$/, '').trim();
+    const prompts = [
+      [`${subject}의 핵심 개념은 무엇인가?`, `${subject}을 한 문장으로 정의하고, 해결하려는 문제를 설명한다.`],
+      [`${subject}가 중요한 이유는 무엇인가?`, `${subject}가 실제 상황에서 어떤 가치와 변화를 만드는지 설명한다.`],
+      [`${subject}를 이해할 때 헷갈리기 쉬운 점은?`, `비슷해 보이는 개념과의 차이 또는 자주 하는 오해를 짚어본다.`],
+      [`${subject}를 직접 적용한다면 어떻게 시작할까?`, `작게 시도할 수 있는 첫 행동을 정하고, 결과를 관찰한다.`],
+      [`${subject}를 설명할 때 기억할 한 문장은?`, `${subject}의 목적, 원리, 적용 방법을 짧고 분명하게 요약한다.`]
+    ];
+    return prompts.map(([q, a]) => ({ q, a }));
+  }
+
+  function openGenerator(){
+    closeMenu();
+    generator.classList.add('show');
+    generator.setAttribute('aria-hidden', 'false');
+    generatorStatus.textContent = '';
+    setTimeout(() => generatorInput.focus(), 120);
+  }
+
+  function closeGenerator(){
+    generator.classList.remove('show');
+    generator.setAttribute('aria-hidden', 'true');
+  }
+
+  function openMenu(){
+    menuLayer.classList.add('show');
+    menuLayer.setAttribute('aria-hidden', 'false');
+    menuToggle.setAttribute('aria-expanded', 'true');
+    menuNotice.textContent = '';
+  }
+
+  function closeMenu(){
+    menuLayer.classList.remove('show');
+    menuLayer.setAttribute('aria-hidden', 'true');
+    menuToggle.setAttribute('aria-expanded', 'false');
+  }
+
+  function generateCards(){
+    const topic = generatorInput.value.trim();
+    if(!topic){
+      generatorStatus.textContent = '주제나 노트를 먼저 입력해 주세요.';
+      generatorInput.focus();
+      return;
+    }
+
+    generateSubmit.disabled = true;
+    generatorStatus.textContent = '카드 초안을 만들고 있어요...';
+
+    setTimeout(() => {
+      const generatedCards = createGeneratedCards(topic);
+      const firstNewIndex = cardData.length;
+      cardData.push(...generatedCards);
+      totalCount = cardData.length;
+
+      if(queue.length === 0){
+        queue = generatedCards.map((_, i) => firstNewIndex + i);
+        document.querySelector('.stage-row').style.display = '';
+        navButtons.style.display = '';
+        hintEl.style.display = '';
+        doneScreen.classList.remove('show');
+      } else {
+        queue.push(...generatedCards.map((_, i) => firstNewIndex + i));
+      }
+
+      generatorInput.value = '';
+      generatorStatus.textContent = '카드 5장이 복습 목록에 추가됐어요.';
+      generateSubmit.disabled = false;
+      render();
+      setTimeout(closeGenerator, 700);
+    }, 450);
+  }
+
   cardEl.addEventListener('click', () => {
     if(dragMoved) return;
     toggleFlip();
@@ -378,6 +607,44 @@
 
   document.getElementById('restartBtn').addEventListener('click', resetDeck);
   document.getElementById('resetBtn').addEventListener('click', resetDeck);
+  menuToggle.addEventListener('click', () => {
+    if(menuLayer.classList.contains('show')) closeMenu();
+    else openMenu();
+  });
+  menuLayer.addEventListener('click', (event) => {
+    if(event.target === menuLayer){
+      closeMenu();
+      return;
+    }
+    const item = event.target.closest('[data-menu-action]');
+    if(!item) return;
+    if(item.dataset.menuAction === 'generate'){
+      openGenerator();
+      return;
+    }
+    const messages = {
+      login: '로그인 기능은 다음 단계에서 연결할 예정이에요.',
+      'create-stack': '새 스택 만들기를 준비하고 있어요.',
+      'view-stacks': '클라우드 스택 보기는 로그인 후 열려요.',
+      settings: '설정 메뉴를 준비하고 있어요.'
+    };
+    menuNotice.textContent = messages[item.dataset.menuAction];
+  });
+  document.getElementById('generatorCloseBtn').addEventListener('click', closeGenerator);
+  document.getElementById('generateSubmit').addEventListener('click', generateCards);
+  generator.addEventListener('click', (event) => {
+    if(event.target === generator) closeGenerator();
+  });
+  document.querySelectorAll('.example-chip').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      generatorInput.value = chip.dataset.prompt;
+      generatorInput.focus();
+    });
+  });
+  document.addEventListener('keydown', (event) => {
+    if(event.key === 'Escape' && generator.classList.contains('show')) closeGenerator();
+    if(event.key === 'Escape' && menuLayer.classList.contains('show')) closeMenu();
+  });
 
   // --- 스와이프 처리 ---
   let startX = 0, startY = 0, dx = 0, dy = 0, dragging = false, dragMoved = false;
