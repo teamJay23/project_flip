@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Flip — 카드 만들기</title>
+<link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+  /* 색상 변수 (기존 Flip 프로토타입과 같은 값) / Color tokens (same as Flip prototype) */
+  :root{
+    --bg-1:#221630;
+    --bg-2:#3a2255;
+    --paper:#faf6ef;
+    --ink:#2a2138;
+    --ink-soft:#6b6178;
+    --amber:#f2b84b;
+    --line:#ffffff1c;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%;
+    font-family:'Pretendard', -apple-system, sans-serif;
+    background:radial-gradient(circle at 30% 20%, var(--bg-2), var(--bg-1) 70%);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 화면 전체: 휴대폰 높이에 맞추고 iOS 안전 영역 피하기 / Full screen with iOS safe areas */
+  .screen{
+    height:100dvh;
+    width:100%; max-width:480px; margin:0 auto;
+    display:flex; flex-direction:column; gap:14px;
+    padding:calc(20px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom));
+  }
+
+  .title{
+    margin:0;
+    color:var(--paper);
+    font-size:22px; font-weight:700;
+  }
+  .desc{
+    margin:0;
+    color:var(--paper); opacity:.7;
+    font-size:14px; line-height:1.5;
+  }
+
+  /* 입력창: 남은 높이를 채우고, 긴 글은 창 안에서 스크롤 / Fill remaining height, scroll inside */
+  .input{
+    flex:1;
+    width:100%;
+    padding:16px;
+    border:1px solid var(--line); border-radius:16px;
+    background:var(--paper); color:var(--ink);
+    font-family:inherit;
+    font-size:16px; /* 16px 미만이면 iOS가 화면을 확대함 / iOS zooms below 16px */
+    line-height:1.6;
+    resize:none;
+    overflow-y:auto;
+  }
+  .input::placeholder{ color:var(--ink-soft); }
+
+  /* [카드 만들기] 버튼 / Submit button */
+  .submit{
+    width:100%;
+    padding:16px;
+    border:0; border-radius:14px;
+    background:var(--amber); color:var(--ink);
+    font-family:inherit; font-size:17px; font-weight:700;
+    cursor:pointer;
+  }
+  .submit:active{ transform:scale(.98); }
+
+  /* 빈 입력 안내 문구 / Empty input hint */
+  .hint{
+    margin:0;
+    color:var(--amber);
+    font-size:14px; font-weight:600;
+  }
+
+  /* 임시 다음 화면 (B 로딩 자리) / Temporary next screen (placeholder for B loading) */
+  .next-screen{
+    justify-content:center; align-items:center;
+  }
+  /* hidden이면 확실히 숨기기 (display:flex보다 우선) / Force hide over display:flex */
+  .screen[hidden]{ display:none; }
+  .next-text{
+    margin:0;
+    color:var(--paper);
+    font-size:18px; font-weight:600;
+  }
+</style>
+</head>
+<body>
+  <!-- A. 입력 화면 / Input screen -->
+  <main class="screen" id="inputScreen">
+    <h1 class="title">카드 만들기</h1>
+    <p class="desc">학습할 텍스트를 붙여넣으면 카드로 만들어 드려요.</p>
+
+    <textarea class="input" id="sourceInput"
+      placeholder="여기에 학습할 텍스트를 붙여넣어 주세요"></textarea>
+
+    <!-- 빈 입력일 때만 보임 / Shown only on empty input -->
+    <p class="hint" id="emptyHint" hidden>학습할 텍스트를 붙여넣어 주세요</p>
+
+    <button class="submit" id="submitBtn" type="button">카드 만들기</button>
+  </main>
+
+  <!-- 임시 다음 화면: AI 카드 생성(2단계) 전까지 자리만 표시 / Placeholder until AI generation -->
+  <main class="screen next-screen" id="nextScreen" hidden>
+    <p class="next-text">카드 만드는 중…</p>
+  </main>
+
+<script>
+  const sourceInput = document.getElementById('sourceInput');
+  const emptyHint = document.getElementById('emptyHint');
+  const submitBtn = document.getElementById('submitBtn');
+  const inputScreen = document.getElementById('inputScreen');
+  const nextScreen = document.getElementById('nextScreen');
+
+  // 이미 시작했는지 기억 (두 번 누름 막기) / Remember if already started (block double tap)
+  let isStarted = false;
+
+  // 띄어쓰기·줄바꿈만 있으면 빈 입력 / Whitespace-only counts as empty
+  function isEmpty(text){
+    return text.trim() === '';
+  }
+
+  // [카드 만들기] 누르기 / Submit click
+  submitBtn.addEventListener('click', () => {
+    // 두 번째 누름은 무시 / Ignore second tap
+    if (isStarted) return;
+
+    // 빈 입력 막기 (버튼은 잠그지 않음) / Block empty input (button stays unlocked)
+    if (isEmpty(sourceInput.value)) {
+      emptyHint.hidden = false;
+      return;
+    }
+
+    // 시작 표시 + 버튼 잠그기 / Mark started + lock button
+    isStarted = true;
+    submitBtn.disabled = true;
+
+    // 입력 화면 숨기고 다음 화면 보이기 / Hide input screen, show next screen
+    inputScreen.hidden = true;
+    nextScreen.hidden = false;
+  });
+
+  // 다시 입력하면 안내 숨기기 / Hide hint when user types again
+  sourceInput.addEventListener('input', () => {
+    emptyHint.hidden = true;
+  });
+</script>
+</body>
+</html>
