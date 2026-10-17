@@ -120,9 +120,63 @@
   // 이미 시작했는지 기억 (두 번 누름 막기) / Remember if already started (block double tap)
   let isStarted = false;
 
+  // 길이 규칙 (PRD v1.5 기능 3) / Length rules
+  const MIN_CHARS = 10;
+  const MAX_CHARS = 5000;
+  const MIN_WORDS = 5;
+  const MAX_WORDS = 2000;
+
+  // 안내 문구 / Hint messages
+  const MSG_EMPTY = '학습할 텍스트를 붙여넣어 주세요';
+  const MSG_TOO_SHORT = '조금 더 긴 글을 넣어주세요 (한글 10자 / 영어 5단어 이상)';
+
   // 띄어쓰기·줄바꿈만 있으면 빈 입력 / Whitespace-only counts as empty
   function isEmpty(text){
     return text.trim() === '';
+  }
+
+  // 주가 되는 언어가 한글인지 단어 다수결로 판단 / Decide main language by word majority
+  // - 한글이 든 단어 = 한글 단어 / Word with Hangul = Korean word
+  // - 한글 없이 알파벳이 든 단어 = 영어 단어 / Word with Latin letters only = English word
+  // - 숫자·기호만 있는 단어는 세지 않음 / Numbers/symbols only are ignored
+  // - 동점이면 한글 / Tie goes to Korean
+  function isKoreanMain(words){
+    let korean = 0;
+    let english = 0;
+    for (const word of words) {
+      if (/[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(word)) korean++;
+      else if (/[A-Za-z]/.test(word)) english++;
+    }
+    return korean > 0 && korean >= english;
+  }
+
+  // 한글이 주이면 글자 수, 아니면 단어 수로 셈
+  // Count characters if Korean is main, otherwise count words
+  function measure(text){
+    const words = text.trim().split(/\s+/);
+    if (isKoreanMain(words)) {
+      // 띄어쓰기·줄바꿈 제외 글자 수 / Characters without whitespace
+      return { unit: 'chars', count: Array.from(text.replace(/\s/g, '')).length };
+    }
+    // 띄어쓰기 기준 단어 수 / Words split by whitespace
+    return { unit: 'words', count: words.length };
+  }
+
+  // 규칙을 벗어나면 안내 문구, 통과하면 빈 문자열 / Return hint message or '' if OK
+  function checkLength(text){
+    if (isEmpty(text)) return MSG_EMPTY;
+
+    const { unit, count } = measure(text);
+    const shown = count.toLocaleString('ko-KR'); // 5001 → 5,001
+
+    if (unit === 'chars') {
+      if (count < MIN_CHARS) return MSG_TOO_SHORT;
+      if (count > MAX_CHARS) return `5,000자까지 만들 수 있어요 (지금 ${shown}자)`;
+    } else {
+      if (count < MIN_WORDS) return MSG_TOO_SHORT;
+      if (count > MAX_WORDS) return `2,000단어까지 만들 수 있어요 (지금 ${shown}단어)`;
+    }
+    return '';
   }
 
   // [카드 만들기] 누르기 / Submit click
@@ -130,8 +184,10 @@
     // 두 번째 누름은 무시 / Ignore second tap
     if (isStarted) return;
 
-    // 빈 입력 막기 (버튼은 잠그지 않음) / Block empty input (button stays unlocked)
-    if (isEmpty(sourceInput.value)) {
+    // 빈 입력·길이 규칙 막기 (버튼은 잠그지 않고 원문도 그대로) / Block invalid input (keep button and text)
+    const message = checkLength(sourceInput.value);
+    if (message) {
+      emptyHint.textContent = message;
       emptyHint.hidden = false;
       return;
     }
