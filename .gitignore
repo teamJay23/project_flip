@@ -1,0 +1,15 @@
+# 비밀값 파일 (PRD 6-1) / Secret env files
+.env
+
+# 이 PC 전용 Claude Code 권한 설정 (팀 스킬 폴더는 무시하지 않음) / Local-only Claude Code settings
+.claude/settings.local.json
+
+# 개인 노트·자료 폴더 (Flip 프로젝트와 무관) / Personal folders, not part of Flip
+.obsidian/
+Audiophile/
+Career/
+Chinese/
+Clippings/
+Memos/
+Z-warrior/
+NRF_2026_2.md
