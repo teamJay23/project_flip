@@ -16,6 +16,7 @@
     --ink-soft:#6b6178;
     --amber:#f2b84b;
     --line:#ffffff1c;
+    --dim:#000000a6; /* 실패 안내 뒤 어두운 배경 / Backdrop behind failure notice */
   }
   *{box-sizing:border-box;}
   html,body{
@@ -77,16 +78,58 @@
     font-size:14px; font-weight:600;
   }
 
-  /* 임시 다음 화면 (B 로딩 자리) / Temporary next screen (placeholder for B loading) */
-  .next-screen{
+  /* 입력 화면 고지 문구 (02 계획 3-4번 후보 A) / Data notice on input screen */
+  .data-notice{
+    margin:0;
+    color:var(--paper); opacity:.85;
+    font-size:13px; line-height:1.5;
+  }
+
+  /* B. 로딩 화면 / Loading screen */
+  .loading-screen{
     justify-content:center; align-items:center;
   }
   /* hidden이면 확실히 숨기기 (display:flex보다 우선) / Force hide over display:flex */
   .screen[hidden]{ display:none; }
-  .next-text{
+  .loading-text{
     margin:0;
     color:var(--paper);
     font-size:18px; font-weight:600;
+  }
+  /* 돌아가는 원 / Spinner */
+  .loading-spinner{
+    width:44px; height:44px;
+    border:4px solid var(--line);
+    border-top-color:var(--amber);
+    border-radius:50%;
+    animation:spin .9s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .loading-spinner[hidden]{ display:none; }
+  /* 움직임 줄이기 설정이면 회전 멈춤 / Stop spinning for reduced-motion users */
+  @media (prefers-reduced-motion: reduce){
+    .loading-spinner{ animation:none; }
+  }
+
+  /* 실패 안내: 입력 화면 위에 겹쳐 뜸 / Failure notice layered over input screen */
+  .fail-layer{
+    position:fixed; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    padding:calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
+    background:var(--dim);
+  }
+  .fail-layer[hidden]{ display:none; }
+  .fail-box{
+    width:100%; max-width:400px;
+    padding:24px 20px 20px;
+    border-radius:18px;
+    background:var(--paper);
+    display:flex; flex-direction:column; gap:20px;
+  }
+  .fail-text{
+    margin:0;
+    color:var(--ink);
+    font-size:16px; font-weight:600; line-height:1.5;
   }
 </style>
 </head>
@@ -102,20 +145,37 @@
     <!-- 빈 입력일 때만 보임 / Shown only on empty input -->
     <p class="hint" id="emptyHint" hidden>학습할 텍스트를 붙여넣어 주세요</p>
 
+    <!-- 고지 문구 (PRD 반영 전 임시, 문구는 팀 질문 18에서 확정) / Data notice (temporary until PRD update) -->
+    <p class="data-notice" id="dataNotice">입력한 글은 Google AI로 전송되며, Google 검토자가 읽거나 Google의 AI 개선에 쓰일 수 있어요. 회사 자료·개인정보는 넣지 마세요.</p>
+
     <button class="submit" id="submitBtn" type="button">카드 만들기</button>
   </main>
 
-  <!-- 임시 다음 화면: AI 카드 생성(2단계) 전까지 자리만 표시 / Placeholder until AI generation -->
-  <main class="screen next-screen" id="nextScreen" hidden>
-    <p class="next-text">카드 만드는 중…</p>
+  <!-- B. 로딩 화면: 사용자는 기다리기만 함 (PRD 기능 6) / Loading screen, user only waits -->
+  <main class="screen loading-screen" id="loadingScreen" hidden>
+    <div class="loading-spinner" id="loadingSpinner" aria-hidden="true"></div>
+    <p class="loading-text" id="loadingText">카드를 만들고 있어요</p>
   </main>
+
+  <!-- 실패 안내 (PRD 기능 7, 문구 3종) / Failure notice (3 fixed messages) -->
+  <div class="fail-layer" id="failLayer" role="alertdialog" aria-modal="true" aria-labelledby="failText" hidden>
+    <div class="fail-box">
+      <p class="fail-text" id="failText"></p>
+      <button class="submit" id="failOkBtn" type="button">확인</button>
+    </div>
+  </div>
 
 <script>
   const sourceInput = document.getElementById('sourceInput');
   const emptyHint = document.getElementById('emptyHint');
   const submitBtn = document.getElementById('submitBtn');
   const inputScreen = document.getElementById('inputScreen');
-  const nextScreen = document.getElementById('nextScreen');
+  const loadingScreen = document.getElementById('loadingScreen');
+  const loadingText = document.getElementById('loadingText');
+  const loadingSpinner = document.getElementById('loadingSpinner');
+  const failLayer = document.getElementById('failLayer');
+  const failText = document.getElementById('failText');
+  const failOkBtn = document.getElementById('failOkBtn');
 
   // 이미 시작했는지 기억 (두 번 누름 막기) / Remember if already started (block double tap)
   let isStarted = false;
@@ -129,6 +189,13 @@
   // 안내 문구 / Hint messages
   const MSG_EMPTY = '학습할 텍스트를 붙여넣어 주세요';
   const MSG_TOO_SHORT = '조금 더 긴 글을 넣어주세요 (한글 10자 / 영어 5단어 이상)';
+
+  // 실패 안내 문구 3종 (PRD 기능 7, 글자 그대로) / Fixed failure messages
+  const MSG_FAIL = {
+    source: '카드를 만들지 못했습니다. 원문을 확인한 후 다시 시도해주세요',
+    network: '인터넷 연결을 확인한 뒤 다시 시도해주세요',
+    service: '잠시 후 다시 시도해주세요'
+  };
 
   // 띄어쓰기·줄바꿈만 있으면 빈 입력 / Whitespace-only counts as empty
   function isEmpty(text){
@@ -180,7 +247,7 @@
   }
 
   // [카드 만들기] 누르기 / Submit click
-  submitBtn.addEventListener('click', () => {
+  submitBtn.addEventListener('click', async () => {
     // 두 번째 누름은 무시 / Ignore second tap
     if (isStarted) return;
 
@@ -196,15 +263,73 @@
     isStarted = true;
     submitBtn.disabled = true;
 
-    // 입력 화면 숨기고 다음 화면 보이기 / Hide input screen, show next screen
-    inputScreen.hidden = true;
-    nextScreen.hidden = false;
+    // 로딩 화면 → 카드 요청 → 결과 처리 / Loading → request → handle result
+    showScreen('loading');
+    const result = await requestCards(sourceInput.value);
+    handleResult(result);
   });
 
   // 다시 입력하면 안내 숨기기 / Hide hint when user types again
   sourceInput.addEventListener('input', () => {
     emptyHint.hidden = true;
   });
+
+  // 화면 하나만 보이기 ('input' / 'loading') / Show only one screen
+  function showScreen(name){
+    inputScreen.hidden = name !== 'input';
+    loadingScreen.hidden = name !== 'loading';
+  }
+
+  // 다시 [카드 만들기]를 누를 수 있게 / Allow submitting again
+  function resetStart(){
+    isStarted = false;
+    submitBtn.disabled = false;
+  }
+
+  // 실패 안내 보이기 (입력창 원문은 그대로) / Show failure notice, keep source text
+  function showFail(kind){
+    failText.textContent = MSG_FAIL[kind];
+    showScreen('input');
+    failLayer.hidden = false;
+    resetStart();
+    failOkBtn.focus();
+  }
+
+  // [확인]: 안내만 닫기 (키보드가 올라오지 않게 버튼에 포커스) / Close notice only
+  failOkBtn.addEventListener('click', () => {
+    failLayer.hidden = true;
+    submitBtn.focus();
+  });
+
+  // 결과 처리: 성공이면 임시 표시, 아니면 실패 안내 / Handle result
+  function handleResult(result){
+    if (result.kind === 'ok') {
+      // 학습 화면은 3단계에서 만든다 (임시 표시) / Study screen comes in stage 3 (temporary)
+      loadingText.textContent = `카드 ${result.cards.length}장 받음 (임시)`;
+      loadingSpinner.hidden = true; // 다 됐으니 원 숨기기 (S2-4에서 정리) / Hide spinner when done
+      return;
+    }
+    showFail(result.kind);
+  }
+
+  // 카드 요청: { kind: 'ok', cards } 또는 { kind: 'source' / 'network' / 'service' }
+  // Request cards: returns { kind: 'ok', cards } or a failure kind
+  async function requestCards(text){
+    // [FAKE-S2-1] 시작: 가짜 결과 (S2-4에서 진짜 요청으로 바꾸며 지움) / Fake results (remove in S2-4)
+    // 주소 끝 ?fake=ok|slow|fail-source|fail-network|fail-service / Pick result by URL parameter
+    const fake = new URLSearchParams(location.search).get('fake') || 'ok';
+    const wait = fake === 'slow' ? 8000 : 2000;
+    await new Promise((resolve) => setTimeout(resolve, wait));
+    if (fake === 'fail-source') return { kind: 'source' };
+    if (fake === 'fail-network') return { kind: 'network' };
+    if (fake === 'fail-service') return { kind: 'service' };
+    return { kind: 'ok', cards: [
+      { front: '가짜 질문 1', back: '가짜 답 1' },
+      { front: '가짜 질문 2', back: '가짜 답 2' },
+      { front: '가짜 질문 3', back: '가짜 답 3' }
+    ] };
+    // [FAKE-S2-1] 끝 / End
+  }
 </script>
 </body>
 </html>
