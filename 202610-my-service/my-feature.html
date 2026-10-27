@@ -167,6 +167,8 @@
     </div>
   </div>
 
+<!-- 카드 생성 웹 앱 주소 (window.APP_CONFIG.CARD_API_URL) / Card API URL -->
+<script src="config.js"></script>
 <script>
   const sourceInput = document.getElementById('sourceInput');
   const emptyHint = document.getElementById('emptyHint');
@@ -191,6 +193,10 @@
   // 카드 장수·문장 수 규칙 (PRD v1.5 기능 5) / Card count and sentence rules
   const MAX_CARDS = 20;
   const MAX_SENTENCES = 3;
+
+  // 카드를 기다리는 최대 시간 (PRD 6-c). Apps Script 50초보다 길게 둔다
+  // Max wait for cards. Keep longer than Apps Script's 50s
+  const LOAD_TIMEOUT_MS = 60000;
 
   // 안내 문구 / Hint messages
   const MSG_EMPTY = '학습할 텍스트를 붙여넣어 주세요';
@@ -318,8 +324,14 @@
 
     // 로딩 화면 → 카드 요청 → 결과 처리 / Loading → request → handle result
     showScreen('loading');
-    const result = await requestCards(sourceInput.value);
-    handleResult(result);
+    try {
+      const result = await requestCards(sourceInput.value);
+      handleResult(result);
+    } catch (err) {
+      // 예상 못 한 오류도 로딩에 갇히지 않게 / Never stay stuck on loading
+      console.warn('[Flip] UNEXPECTED');
+      showFail('service');
+    }
   });
 
   // 다시 입력하면 안내 숨기기 / Hide hint when user types again
@@ -363,56 +375,62 @@
       const cards = checked.cards;
       loadingText.textContent =
         `카드 ${cards.length}장 받음 (임시) · 처음: ${cards[0].front} · 끝: ${cards[cards.length - 1].front}`;
-      loadingSpinner.hidden = true; // 다 됐으니 원 숨기기 (S2-4에서 정리) / Hide spinner when done
+      loadingSpinner.hidden = true; // 다 됐으니 원 숨기기 (3단계에서 정리) / Hide spinner when done
       return;
     }
     showFail(checked.kind);
   }
 
-  // [FAKE-S2-2] 시작: 검사 함수 시험용 가짜 AI 결과 (S2-4에서 지움) / Fake AI cards for checkCards (remove in S2-4)
-  // 가짜 카드 n장 만들기 / Make n fake cards
-  function fakeCards(n){
-    const cards = [];
-    for (let i = 1; i <= n; i++) {
-      cards.push({ front: `가짜 질문 ${i}`, back: `가짜 답 ${i}` });
-    }
-    return cards;
-  }
-  const FOUR_SENTENCES = '첫째. 둘째. 셋째. 넷째.';
-  // 2번째 카드를 망가뜨려 "첫 카드만 보는" 실수를 잡는다 / Break card 2 to catch first-card-only bugs
-  const FAKE_S2_2 = {
-    'cards-0': () => [],
-    'cards-22': () => fakeCards(22),
-    'cards-22-bad-tail': () => { const c = fakeCards(22); c[20].back = FOUR_SENTENCES; c[21].front = ''; return c; },
-    'sentences-3': () => { const c = fakeCards(3); c[1].back = '첫째. 둘째. 셋째.'; return c; },
-    'sentences-4': () => { const c = fakeCards(3); c[1].back = FOUR_SENTENCES; return c; },
-    'empty-front': () => { const c = fakeCards(3); c[1].front = ''; return c; },
-    'blank-back': () => { const c = fakeCards(3); c[1].back = '   \n  '; return c; },
-    'number-front': () => { const c = fakeCards(3); c[1].front = 123; return c; },
-    'not-array': () => 'cards'
-  };
-  // [FAKE-S2-2] 끝 / End
-
   // 카드 요청: { kind: 'ok', cards } 또는 { kind: 'source' / 'network' / 'service' }
   // Request cards: returns { kind: 'ok', cards } or a failure kind
+  // 실패 나누기는 02 계획 6-1번 표 0~5 / Failure split follows plan 02, table 6-1 rows 0-5
   async function requestCards(text){
-    // [FAKE-S2-1] 시작: 가짜 결과 (S2-4에서 진짜 요청으로 바꾸며 지움) / Fake results (remove in S2-4)
-    // 주소 끝 ?fake=ok|slow|fail-source|fail-network|fail-service / Pick result by URL parameter
-    // S2-2 이름(cards-0 등)은 위 FAKE_S2_2 참고 / See FAKE_S2_2 above for S2-2 names
-    const fake = new URLSearchParams(location.search).get('fake') || 'ok';
-    const wait = fake === 'slow' ? 8000 : 2000;
-    await new Promise((resolve) => setTimeout(resolve, wait));
-    if (fake === 'fail-source') return { kind: 'source' };
-    if (fake === 'fail-network') return { kind: 'network' };
-    if (fake === 'fail-service') return { kind: 'service' };
-    // S2-2 가짜는 AI 성공처럼 넘기고 검사는 checkCards가 한다 / S2-2 fakes go through checkCards as success
-    if (FAKE_S2_2.hasOwnProperty(fake)) return { kind: 'ok', cards: FAKE_S2_2[fake]() };
-    return { kind: 'ok', cards: [
-      { front: '가짜 질문 1', back: '가짜 답 1' },
-      { front: '가짜 질문 2', back: '가짜 답 2' },
-      { front: '가짜 질문 3', back: '가짜 답 3' }
-    ] };
-    // [FAKE-S2-1] 끝 / End
+    // 0. 보내기 전에 인터넷이 꺼져 있으면 보내지 않음 / Offline: don't send
+    if (!navigator.onLine) return { kind: 'network' };
+
+    const url = window.APP_CONFIG && window.APP_CONFIG.CARD_API_URL;
+    if (!url) {
+      console.warn('[Flip] NO_URL'); // config.js를 못 읽음 / config.js missing
+      return { kind: 'service' };
+    }
+
+    // 1. 60초가 지나면 요청을 끊음 / Abort after 60s
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), LOAD_TIMEOUT_MS);
+    let res = null;
+    try {
+      // text/plain: 브라우저 사전 요청(CORS preflight)을 피함 (22 7번) / Avoids CORS preflight
+      res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ text }),
+        signal: controller.signal
+      });
+      const data = await res.json();
+      // 4. Apps Script가 실패라고 알려 줌 → 서비스 문제 / Server said not ok
+      if (!data || data.ok !== true) {
+        console.warn('[Flip]', data && data.reason, data && data.status);
+        return { kind: 'service' };
+      }
+      // 5~9. 목록인지·장수·형식·문장 수는 checkCards가 본다 / checkCards does the rest
+      return { kind: 'ok', cards: data.cards };
+    } catch (err) {
+      // 1. 60초 초과 / Timed out
+      if (controller.signal.aborted) {
+        console.warn('[Flip] TIMEOUT');
+        return { kind: 'service' };
+      }
+      // 2. 응답을 못 받음: 인터넷이 꺼졌을 때만 인터넷 문구 / No response: network only if offline
+      if (!res) {
+        console.warn('[Flip] FETCH_FAILED');
+        return { kind: navigator.onLine ? 'service' : 'network' };
+      }
+      // 3. 응답이 JSON이 아님 (예: Apps Script 오류 페이지) / Response not JSON
+      console.warn('[Flip] BAD_JSON', res.status);
+      return { kind: 'service' };
+    } finally {
+      clearTimeout(timer); // 먼저 끝나면 타이머 끄기 / Stop timer once done
+    }
   }
 </script>
 </body>
