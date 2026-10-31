@@ -117,7 +117,7 @@ function generate_(text, key) {
     return finish_(result, info);
   }
   const cards = readCards_(body);
-  if (cards === null) return finish_(withDiag_({ ok: false, reason: 'BAD_RESPONSE' }, body, info), info);
+  if (cards === null) return finish_({ ok: false, reason: 'BAD_RESPONSE' }, info);
   return finish_({ ok: true, cards: cards }, info);   // 검사는 HTML에서 (02 5번) / HTML checks the cards
 }
 
@@ -167,44 +167,6 @@ function readCards_(body) {
     return null;                                  // 후보 없음(차단)·JSON 아님 등 / Blocked or not JSON
   }
 }
-
-// [DIAG-S2-4] 시작: BAD_RESPONSE 원인 찾기용 (원인을 고칠 때 지움) / Diagnose BAD_RESPONSE (remove when fixed)
-// 응답에 짧은 코드·숫자만 붙인다. 원문·카드는 넣지 않는다 / Short codes and numbers only, never text or cards
-function withDiag_(result, body, info) {
-  const shape = badShape_(body);
-  result.why = shape.why;
-  result.len = shape.len;                          // AI 답 글자 수 (끊김 짐작용) / AI answer length
-  result.finish = info.finish || '';
-  result.block = info.block || '';
-  result.outTokens = (info.usage && info.usage.candidatesTokenCount) || 0;
-  return result;
-}
-
-// AI 답이 어떤 모양이었는지 코드로 / Name the shape of the AI answer
-function badShape_(body) {
-  if (!body) return { why: 'NO_BODY', len: 0 };
-  let json;
-  try {
-    json = body.candidates[0].content.parts.filter((p) => !p.thought).map((p) => p.text || '').join('');
-  } catch (err) {
-    return { why: 'NO_CANDIDATE', len: 0 };        // 차단 등으로 답이 없음 / No answer (e.g. blocked)
-  }
-  let parsed;
-  try {
-    parsed = JSON.parse(json);
-  } catch (err) {
-    // ``` 로 감쌌는지 구분 / Tell code-fenced answers apart
-    return { why: json.trim().indexOf('```') === 0 ? 'NOT_JSON_FENCE' : 'NOT_JSON', len: json.length };
-  }
-  if (Array.isArray(parsed)) return { why: 'ARRAY', len: json.length };
-  if (parsed && typeof parsed === 'object') {
-    // 칸 이름만 (앞 3개, 20자까지) / Field names only (first 3, max 20 chars)
-    const keys = Object.keys(parsed).slice(0, 3).map((k) => k.slice(0, 20)).join('|');
-    return { why: 'NO_CARDS:' + keys, len: json.length };
-  }
-  return { why: 'TYPE_' + typeof parsed, len: json.length };
-}
-// [DIAG-S2-4] 끝 / End
 
 // 기록 한 줄 남기고 결과 돌려주기 / Write one log line, then return the result
 function finish_(result, info) {
