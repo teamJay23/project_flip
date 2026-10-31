@@ -184,6 +184,9 @@
   // 이미 시작했는지 기억 (두 번 누름 막기) / Remember if already started (block double tap)
   let isStarted = false;
 
+  // 진행 중인 카드 요청 { controller, startedAt, timer } (없으면 null) / Request in progress
+  let pending = null;
+
   // 길이 규칙 (PRD v1.5 기능 3) / Length rules
   const MIN_CHARS = 10;
   const MAX_CHARS = 5000;
@@ -334,6 +337,18 @@
     }
   });
 
+  // 다른 앱에 갔다 오면 지난 시간으로 60초를 다시 판단 (02 6-2번, S2-7)
+  // 휴대폰은 화면 뒤에서 타이머를 늦추거나 멈추기 때문 / Phones delay or freeze timers in the background
+  // Re-check the 60s limit by wall-clock time when the page is visible again
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible' || !pending) return;
+    const c = pending.controller; // 이 요청만 끊기 (다음 요청은 건드리지 않음) / Abort only this request
+    const left = LOAD_TIMEOUT_MS - (Date.now() - pending.startedAt);
+    clearTimeout(pending.timer);
+    if (left <= 0) c.abort(); // 60초 지남 → 아래 TIMEOUT 길 / Over 60s → TIMEOUT path below
+    else pending.timer = setTimeout(() => c.abort(), left); // 남은 시간만 다시 / Re-arm with time left
+  });
+
   // 다시 입력하면 안내 숨기기 / Hide hint when user types again
   sourceInput.addEventListener('input', () => {
     emptyHint.hidden = true;
@@ -394,9 +409,13 @@
       return { kind: 'service' };
     }
 
-    // 1. 60초가 지나면 요청을 끊음 / Abort after 60s
+    // 1. 60초가 지나면 요청을 끊음 (시작 시각도 기억, S2-7) / Abort after 60s, remember start time
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), LOAD_TIMEOUT_MS);
+    pending = {
+      controller,
+      startedAt: Date.now(),
+      timer: setTimeout(() => controller.abort(), LOAD_TIMEOUT_MS)
+    };
     let res = null;
     try {
       // text/plain: 브라우저 사전 요청(CORS preflight)을 피함 (22 7번) / Avoids CORS preflight
@@ -429,7 +448,9 @@
       console.warn('[Flip] BAD_JSON', res.status);
       return { kind: 'service' };
     } finally {
-      clearTimeout(timer); // 먼저 끝나면 타이머 끄기 / Stop timer once done
+      // 먼저 끝나면 타이머 끄기 (다시 건 타이머 포함) / Stop timer once done, including a re-armed one
+      clearTimeout(pending.timer);
+      pending = null;
     }
   }
 </script>
