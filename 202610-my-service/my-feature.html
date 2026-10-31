@@ -17,6 +17,7 @@
     --amber:#f2b84b;
     --line:#ffffff1c;
     --dim:#000000a6; /* 실패 안내 뒤 어두운 배경 / Backdrop behind failure notice */
+    --back:#2a1b42; /* 카드 뒷면 바탕 (옛 프로토타입 값) / Card back (prototype value) */
   }
   *{box-sizing:border-box;}
   html,body{
@@ -108,9 +109,69 @@
   }
   @keyframes spin{ to{ transform:rotate(360deg); } }
   .loading-spinner[hidden]{ display:none; }
+  /* C. 학습 화면: 카드 한 장 / Study screen, one card */
+  /* 카드: 남은 높이를 채움. min-height:0이 없으면 긴 글에 카드가 늘어나 스크롤이 안 됨 (30 계획 1절 7번)
+     Card fills remaining height. Without min-height:0 it grows with long text and never scrolls */
+  .card{
+    flex:1; min-height:0;
+    position:relative;
+    border-radius:18px;
+    transform-style:preserve-3d;
+    transform:perspective(1200px) rotateY(0deg);
+    transition:transform .4s ease;
+    cursor:pointer;
+    touch-action:manipulation; /* 두 번 탭 확대 막기 / Block double-tap zoom */
+    outline:none;
+  }
+  .card.flipped{ transform:perspective(1200px) rotateY(180deg); }
+  .card:focus-visible{ outline:3px solid var(--amber); outline-offset:3px; }
+
+  /* 앞면·뒷면: 겹쳐 두고, 긴 글은 면 안에서 스크롤 (잘라서 숨기지 않음)
+     Front/back stacked; long text scrolls inside the face (never clipped) */
+  .face{
+    position:absolute; inset:0; min-height:0;
+    display:flex; flex-direction:column; gap:12px;
+    padding:20px;
+    border-radius:18px;
+    overflow-y:auto;
+    -webkit-backface-visibility:hidden;
+    backface-visibility:hidden;
+    transition:visibility 0s linear 0s; /* 보일 때는 바로 / Show immediately */
+  }
+  .face-front{ background:var(--paper); color:var(--ink); }
+  .face-back{ background:var(--back); color:var(--amber); transform:rotateY(180deg); }
+  /* 안 보이는 면: 손가락 입력을 받지 않고, 회전이 끝난 뒤 숨김 (30 계획 S3-2 5번)
+     Hidden face: no touch input, hidden after the turn ends */
+  .card.flipped .face-front,
+  .card:not(.flipped) .face-back{
+    visibility:hidden;
+    pointer-events:none;
+    transition:visibility 0s linear .4s;
+  }
+  .face-label{
+    margin:0;
+    font-size:13px; font-weight:600;
+  }
+  .face-front .face-label{ color:var(--ink-soft); }
+  .face-back .face-label{ opacity:.8; }
+  /* margin:auto로 가운데. 글이 넘치면 위가 잘리지 않고 맨 위부터 스크롤
+     Centered with auto margins; when overflowing, scrolls from the top without clipping */
+  .face-text{
+    margin:auto 0;
+    font-size:18px; font-weight:600; line-height:1.6;
+    text-align:left;
+    overflow-wrap:anywhere; /* 긴 영어 단어도 줄바꿈 / Wrap long words */
+  }
+  /* 안다/모른다 버튼 자리 (버튼은 4단계, 결정 2 ②) / Button row placeholder (buttons in stage 4) */
+  .judge-row{ flex:none; height:52px; }
+
   /* 움직임 줄이기 설정이면 회전 멈춤 / Stop spinning for reduced-motion users */
   @media (prefers-reduced-motion: reduce){
     .loading-spinner{ animation:none; }
+    /* 카드도 돌지 않고 바로 바뀜 / Card switches instantly without turning */
+    .card,
+    .card.flipped .face-front,
+    .card:not(.flipped) .face-back{ transition:none; }
   }
 
   /* 실패 안내: 입력 화면 위에 겹쳐 뜸 / Failure notice layered over input screen */
@@ -159,6 +220,22 @@
     <p class="loading-text" id="loadingText">카드를 만들고 있어요</p>
   </main>
 
+  <!-- C. 학습 화면: 카드를 탭하면 뒤집기만 (PRD 기능 9·10) / Study screen, tap only flips -->
+  <main class="screen study-screen" id="studyScreen" hidden>
+    <div class="card" id="card" role="button" tabindex="0">
+      <div class="face face-front" id="frontFace">
+        <p class="face-label">질문</p>
+        <p class="face-text" id="frontText"></p>
+      </div>
+      <div class="face face-back" id="backFace" aria-hidden="true">
+        <p class="face-label">답</p>
+        <p class="face-text" id="backText"></p>
+      </div>
+    </div>
+    <!-- 안다/모른다 버튼 자리 (4단계) / Button row placeholder (stage 4) -->
+    <div class="judge-row" aria-hidden="true"></div>
+  </main>
+
   <!-- 실패 안내 (PRD 기능 7, 문구 3종) / Failure notice (3 fixed messages) -->
   <div class="fail-layer" id="failLayer" role="alertdialog" aria-modal="true" aria-labelledby="failText" hidden>
     <div class="fail-box">
@@ -175,17 +252,27 @@
   const submitBtn = document.getElementById('submitBtn');
   const inputScreen = document.getElementById('inputScreen');
   const loadingScreen = document.getElementById('loadingScreen');
-  const loadingText = document.getElementById('loadingText');
-  const loadingSpinner = document.getElementById('loadingSpinner');
   const failLayer = document.getElementById('failLayer');
   const failText = document.getElementById('failText');
   const failOkBtn = document.getElementById('failOkBtn');
+  const studyScreen = document.getElementById('studyScreen');
+  const cardEl = document.getElementById('card');
+  const frontFace = document.getElementById('frontFace');
+  const backFace = document.getElementById('backFace');
+  const frontText = document.getElementById('frontText');
+  const backText = document.getElementById('backText');
 
   // 이미 시작했는지 기억 (두 번 누름 막기) / Remember if already started (block double tap)
   let isStarted = false;
 
   // 진행 중인 카드 요청 { controller, startedAt, timer } (없으면 null) / Request in progress
   let pending = null;
+
+  // 학습 상태 (메모리에만, 새로고침하면 사라짐 — 4-3은 "이후" 단계)
+  // Study state, memory only (lost on refresh; 4-3 comes later)
+  let stack = [];        // 카드 목록 / Cards
+  let current = 0;       // 지금 카드 번호 (0부터) / Current card index
+  let isFlipped = false; // 뒷면을 보고 있는지 / Showing the back
 
   // 길이 규칙 (PRD v1.5 기능 3) / Length rules
   const MIN_CHARS = 10;
@@ -200,6 +287,9 @@
   // 카드를 기다리는 최대 시간 (PRD 6-c). Apps Script 50초보다 길게 둔다
   // Max wait for cards. Keep longer than Apps Script's 50s
   const LOAD_TIMEOUT_MS = 60000;
+
+  // 이만큼 넘게 움직이면 탭이 아니라 밀기 (30 계획 결정 7) / Movement beyond this is a scroll, not a tap
+  const TAP_MOVE_PX = 10;
 
   // 안내 문구 / Hint messages
   const MSG_EMPTY = '학습할 텍스트를 붙여넣어 주세요';
@@ -273,8 +363,22 @@
     return typeof face === 'string' && !isEmpty(face);
   }
 
-  // AI 카드 검사: 배열 → 0장 → 앞 20장 자르기 → 전체 형식 → 전체 문장 수
-  // Check AI cards: array → zero → keep first 20 → all formats → all sentence counts
+  // 같은 질문(앞뒤 띄어쓰기 뺀 앞면)은 처음 것만 남김, 안내 없음 (PRD 4-2, 결정 1·6)
+  // 앞면이 글자가 아닌 카드는 남겨서 형식 검사가 잡게 한다
+  // Keep only the first card of each question; leave bad fronts for the format check
+  function dedupeFronts(cards){
+    const seen = new Set();
+    return cards.filter((card) => {
+      if (!card || !isGoodFace(card.front)) return true;
+      const key = card.front.trim();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  // AI 카드 검사: 배열 → 0장 → 같은 질문 거르기 → 앞 20장 자르기 → 전체 형식 → 전체 문장 수
+  // Check AI cards: array → zero → drop duplicate questions → keep first 20 → all formats → all sentence counts
   // 돌려주는 값 / Returns: { kind: 'ok', cards } | { kind: 'source' } | { kind: 'service' }
   function checkCards(cards){
     // 목록이 아니면 서비스 문제 / Not a list → service problem
@@ -285,8 +389,9 @@
     // 0장이면 원문 문제 (4-a) / Zero cards → source problem
     if (cards.length === 0) return { kind: 'source' };
 
-    // 생성 순서대로 앞 20장만, 안내 없음 (5-b) / Keep first 20 in order, no notice
-    const kept = cards.slice(0, MAX_CARDS);
+    // 같은 질문을 거른 뒤 생성 순서대로 앞 20장만, 안내 없음 (4-2, 5-b, 결정 6 B)
+    // Drop duplicate questions, then keep first 20 in order, no notice
+    const kept = dedupeFronts(cards).slice(0, MAX_CARDS);
 
     // 형식을 먼저 전부 본다: 빈 면·문자열 아님 → 서비스 문제 (팀 질문 7)
     // Check all formats first: empty or non-string face → service problem
@@ -356,10 +461,11 @@
     emptyHint.hidden = true;
   });
 
-  // 화면 하나만 보이기 ('input' / 'loading') / Show only one screen
+  // 화면 하나만 보이기 ('input' / 'loading' / 'study') / Show only one screen
   function showScreen(name){
     inputScreen.hidden = name !== 'input';
     loadingScreen.hidden = name !== 'loading';
+    studyScreen.hidden = name !== 'study';
   }
 
   // 다시 [카드 만들기]를 누를 수 있게 / Allow submitting again
@@ -383,20 +489,76 @@
     submitBtn.focus();
   });
 
-  // 결과 처리: 성공이면 임시 표시, 아니면 실패 안내 / Handle result
+  // 결과 처리: 성공이면 학습 시작, 아니면 실패 안내 / Handle result
   function handleResult(result){
     // 성공이면 카드 검사를 거친다 / Run card check on success
     const checked = result.kind === 'ok' ? checkCards(result.cards) : result;
     if (checked.kind === 'ok') {
-      // 학습 화면은 3단계에서 만든다 (임시 표시: 장수 + 처음·끝 앞면) / Temporary: count + first/last front
-      const cards = checked.cards;
-      loadingText.textContent =
-        `카드 ${cards.length}장 받음 (임시) · 처음: ${cards[0].front} · 끝: ${cards[cards.length - 1].front}`;
-      loadingSpinner.hidden = true; // 다 됐으니 원 숨기기 (3단계에서 정리) / Hide spinner when done
+      startStudy(checked.cards);
       return;
     }
     showFail(checked.kind);
   }
+
+  // 학습 시작: 추가 조작 없이 첫 카드 앞면 (PRD 4-1, 5-1) / Start study on first card's front
+  function startStudy(cards){
+    stack = cards;
+    showCard(0);
+    showScreen('study');
+    cardEl.focus(); // 화면이 보인 뒤에 포커스 / Focus after the screen is shown
+  }
+
+  // 카드 하나 보이기, 언제나 앞면·맨 위부터 (5-1, 4단계 5-2 준비)
+  // Show a card, always front side and scrolled to top
+  function showCard(i){
+    current = i;
+    // AI 글은 글자로만 넣는다 (태그가 실행되지 않게) / Insert AI text as plain text only
+    frontText.textContent = stack[i].front;
+    backText.textContent = stack[i].back;
+    frontFace.scrollTop = 0;
+    backFace.scrollTop = 0;
+    setFlipped(false);
+  }
+
+  // 앞/뒤 바꾸기만, 다음 카드로 가지 않음 (PRD 6-2)
+  // 손가락 입력·숨기기는 CSS가 .flipped를 보고 처리 / CSS handles touch and visibility via .flipped
+  // Flip only, never move to the next card
+  function setFlipped(flipped){
+    isFlipped = flipped;
+    cardEl.classList.toggle('flipped', flipped);
+    frontFace.setAttribute('aria-hidden', String(flipped));
+    backFace.setAttribute('aria-hidden', String(!flipped));
+  }
+
+  // 손가락(마우스)을 댄 곳과 그때 보이는 면의 스크롤 위치 (결정 7) / Where the press began
+  let tapStart = null;
+  cardEl.addEventListener('pointerdown', (e) => {
+    const face = isFlipped ? backFace : frontFace;
+    tapStart = { x: e.clientX, y: e.clientY, scroll: face.scrollTop };
+  });
+  // 브라우저가 밀기로 보고 취소하면 기억 지우기 / Forget the press when the browser cancels it as a scroll
+  cardEl.addEventListener('pointercancel', () => { tapStart = null; });
+
+  // 카드 탭: 뒤집기 (뒷면에서 다시 탭하면 앞면, 결정 3) / Tap card: toggle front/back
+  // 10px 넘게 움직였거나 면이 스크롤됐으면 탭이 아니라 밀기 → 뒤집지 않음 (결정 7)
+  // Moved over 10px or the face scrolled → it was a scroll, not a tap
+  cardEl.addEventListener('click', (e) => {
+    const start = tapStart;
+    tapStart = null;
+    const face = isFlipped ? backFace : frontFace;
+    if (start && (Math.abs(e.clientX - start.x) > TAP_MOVE_PX ||
+                  Math.abs(e.clientY - start.y) > TAP_MOVE_PX ||
+                  face.scrollTop !== start.scroll)) return;
+    setFlipped(!isFlipped);
+  });
+
+  // 키보드 Enter·Space로도 뒤집기 / Flip with Enter or Space too
+  cardEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault(); // Space로 화면이 스크롤되지 않게 / Stop Space from scrolling the page
+      setFlipped(!isFlipped);
+    }
+  });
 
   // 카드 요청: { kind: 'ok', cards } 또는 { kind: 'source' / 'network' / 'service' }
   // Request cards: returns { kind: 'ok', cards } or a failure kind
