@@ -298,11 +298,13 @@
       }
     }
 
-    // 그다음 문장 수: 한 면이라도 3문장 초과 → 원문 문제 (5-a)
-    // Then sentences: any face over 3 → source problem
-    for (const card of kept) {
-      if (countSentences(card.front) > MAX_SENTENCES || countSentences(card.back) > MAX_SENTENCES) {
-        return { kind: 'source' };
+    // 그다음 문장 수: 한 면이라도 3문장 초과 → 서비스 문제 (5-a)
+    // 원문이 아니라 AI가 규칙을 어긴 것이라 다시 누르면 된다 (admin 2026-10-31, 강사님 피드백 5)
+    // Then sentences: any face over 3 → service problem (AI broke the rule, retry helps)
+    for (let i = 0; i < kept.length; i++) {
+      if (countSentences(kept[i].front) > MAX_SENTENCES || countSentences(kept[i].back) > MAX_SENTENCES) {
+        console.warn('[Flip] TOO_LONG', i + 1); // 카드 번호만 / Card number only
+        return { kind: 'service' };
       }
     }
     return { kind: 'ok', cards: kept };

@@ -26,7 +26,7 @@ def app_kind(d):
     if any(not isinstance(c, dict) or not good_face(c.get('front')) or not good_face(c.get('back')) for c in kept):
         return 'service'
     if any(sentences(c['front']) > 3 or sentences(c['back']) > 3 for c in kept):
-        return 'source'
+        return 'service'                              # 3문장 초과 = 서비스 문제 (2026-10-31) / Over 3 sentences = service
     return 'ok'
 
 rows = []
