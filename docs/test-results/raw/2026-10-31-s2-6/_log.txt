@@ -1,0 +1,36 @@
+06-max-ko #1 cards=15 {'ok': True, 'ms': 2257, 'inTokens': 3993, 'outTokens': 742, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 4.1, 'app': 'ok'}
+06-max-ko #2 cards=14 {'ok': True, 'ms': 2350, 'inTokens': 3993, 'outTokens': 693, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.9, 'app': 'ok'}
+06-max-ko #3 cards=10 {'ok': True, 'ms': 1507, 'inTokens': 3993, 'outTokens': 440, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.1, 'app': 'ok'}
+06-max-ko #4 cards=10 {'ok': True, 'ms': 2061, 'inTokens': 3993, 'outTokens': 514, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.7, 'app': 'ok'}
+06-max-ko #5 cards=15 {'ok': True, 'ms': 2300, 'inTokens': 3993, 'outTokens': 743, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.9, 'app': 'ok'}
+06-max-ko #6 cards=14 {'ok': True, 'ms': 2095, 'inTokens': 3993, 'outTokens': 702, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.8, 'app': 'ok'}
+06-max-ko #7 cards=10 {'ok': True, 'ms': 1594, 'inTokens': 3993, 'outTokens': 443, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.4, 'app': 'ok'}
+06-max-ko #8 cards=14 {'ok': True, 'ms': 2012, 'inTokens': 3993, 'outTokens': 644, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.6, 'app': 'ok'}
+06-max-ko #9 cards=10 {'ok': True, 'ms': 2143, 'inTokens': 3993, 'outTokens': 474, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.6, 'app': 'ok'}
+06-max-ko #10 cards=10 {'ok': True, 'ms': 1938, 'inTokens': 3993, 'outTokens': 467, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.8, 'app': 'ok'}
+07-max-en #1 cards=18 {'ok': True, 'ms': 2103, 'inTokens': 2845, 'outTokens': 750, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.9, 'app': 'ok'}
+07-max-en #2 cards=13 {'ok': True, 'ms': 1826, 'inTokens': 2845, 'outTokens': 571, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.5, 'app': 'ok'}
+07-max-en #3 cards=16 {'ok': True, 'ms': 2243, 'inTokens': 2845, 'outTokens': 665, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.8, 'app': 'ok'}
+07-max-en #4 cards=12 {'ok': True, 'ms': 1783, 'inTokens': 2845, 'outTokens': 492, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.3, 'app': 'ok'}
+07-max-en #5 cards=16 {'ok': True, 'ms': 2345, 'inTokens': 2845, 'outTokens': 719, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 4.1, 'app': 'ok'}
+07-max-en #6 cards=17 {'ok': True, 'ms': 2359, 'inTokens': 2845, 'outTokens': 828, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.9, 'app': 'ok'}
+07-max-en #7 cards=18 {'ok': True, 'ms': 3799, 'inTokens': 2845, 'outTokens': 787, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 5.3, 'app': 'ok'}
+07-max-en #8 cards=15 {'ok': True, 'ms': 2080, 'inTokens': 2845, 'outTokens': 647, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.8, 'app': 'ok'}
+07-max-en #9 cards=15 {'ok': True, 'ms': 1993, 'inTokens': 2845, 'outTokens': 647, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.6, 'app': 'ok'}
+07-max-en #10 cards=18 {'ok': True, 'ms': 2092, 'inTokens': 2845, 'outTokens': 721, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.7, 'app': 'ok'}
+03-article #1 cards=13 {'ok': True, 'ms': 2106, 'inTokens': 846, 'outTokens': 639, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.7, 'app': 'ok'}
+03-article #2 cards=13 {'ok': True, 'ms': 1810, 'inTokens': 846, 'outTokens': 587, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.2, 'app': 'ok'}
+03-article #3 cards=13 {'ok': True, 'ms': 1996, 'inTokens': 846, 'outTokens': 639, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.5, 'app': 'ok'}
+03-article #4 cards=12 {'ok': True, 'ms': 1717, 'inTokens': 846, 'outTokens': 565, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.3, 'app': 'ok'}
+03-article #5 cards=13 {'ok': True, 'ms': 2381, 'inTokens': 846, 'outTokens': 693, 'thinkTokens': 0, 'finish': 'STOP', 'rt': 3.8, 'app': 'ok'}
+
+== ¿ä¾à / Summary ==
+06-max-ko: n=10 app={'ok': 10, 'source': 0, 'service': 0} fail=[]
+  rt avg 3.7 max 4.1 / server avg 2.0 max 2.35 / gap avg 1.7
+  tokens in 3993.0 out 586.2 think 0.0 / cards 12.2
+07-max-en: n=10 app={'ok': 10, 'source': 0, 'service': 0} fail=[]
+  rt avg 3.9 max 5.3 / server avg 2.3 max 3.799 / gap avg 1.6
+  tokens in 2845.0 out 682.7 think 0.0 / cards 15.8
+03-article: n=5 app={'ok': 5, 'source': 0, 'service': 0} fail=[]
+  rt avg 3.5 max 3.8 / server avg 2.0 max 2.381 / gap avg 1.5
+  tokens in 846.0 out 624.6 think 0.0 / cards 12.8

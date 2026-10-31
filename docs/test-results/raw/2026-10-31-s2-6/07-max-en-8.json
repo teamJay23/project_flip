@@ -1,0 +1,72 @@
+{
+ "ok": true,
+ "cards": [
+  {
+   "front": "What did Hermann Ebbinghaus publish in 1885?",
+   "back": "He published a book about his experiments on memory and forgetting."
+  },
+  {
+   "front": "What is the forgetting curve?",
+   "back": "A graph showing that memory fades fastest right after learning and the rate of forgetting slows down as time goes on."
+  },
+  {
+   "front": "What is the fluency illusion?",
+   "back": "Mistaking ease of reading for real understanding when sentences feel familiar during rereading."
+  },
+  {
+   "front": "What is retrieval practice?",
+   "back": "Bringing stored information back to mind by yourself, such as closing the book and trying to recall what you just read."
+  },
+  {
+   "front": "What is the testing effect?",
+   "back": "The phenomenon where the act of taking a test makes memories stronger."
+  },
+  {
+   "front": "What is the spacing effect?",
+   "back": "Spreading studying across several days leads to better long-term memory than cramming into one session."
+  },
+  {
+   "front": "What is spaced repetition?",
+   "back": "A method that puts the spacing effect to work by gradually increasing the gaps between reviews."
+  },
+  {
+   "front": "What is blocked practice?",
+   "back": "Textbook exercises grouping problems by chapter so you solve many problems of the same type in a row."
+  },
+  {
+   "front": "What is interleaving?",
+   "back": "Mixing different types of problems together instead of practicing the same type in a row."
+  },
+  {
+   "front": "What is elaboration?",
+   "back": "Connecting new information to what you already know and explaining it in more detail."
+  },
+  {
+   "front": "What is dual coding theory?",
+   "back": "Allan Paivio's idea that memory has separate channels for verbal information and visual information."
+  },
+  {
+   "front": "Why should you find concrete examples for each concept?",
+   "back": "It makes concepts easier both to remember and to apply."
+  },
+  {
+   "front": "What is metacognition?",
+   "back": "The ability to step back and examine your own thinking and know what you know and do not know."
+  },
+  {
+   "front": "Which two methods did John Dunlosky and his colleagues rate as the most useful in 2013?",
+   "back": "Practice testing and distributed practice."
+  },
+  {
+   "front": "What are desirable difficulties?",
+   "back": "Methods like recalling, spacing, and mixed practice that feel harder in the moment while making memory stronger in the end."
+  }
+ ],
+ "ms": 2080,
+ "inTokens": 2845,
+ "outTokens": 647,
+ "thinkTokens": 0,
+ "finish": "STOP",
+ "rt": 3.8,
+ "app": "ok"
+}

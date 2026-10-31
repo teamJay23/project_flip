@@ -1,0 +1,80 @@
+{
+ "ok": true,
+ "cards": [
+  {
+   "front": "What did Hermann Ebbinghaus publish in 1885?",
+   "back": "He published a book about his experiments on memory and forgetting."
+  },
+  {
+   "front": "What happens to memory right after learning according to the forgetting curve?",
+   "back": "Memory fades fastest right after learning, and the rate of forgetting slows down as time goes on."
+  },
+  {
+   "front": "What is the fluency illusion?",
+   "back": "It is mistaking ease of reading for real understanding."
+  },
+  {
+   "front": "What is retrieval practice?",
+   "back": "Retrieval means bringing stored information back to mind by yourself, such as closing the book and trying to recall what you just read, answering practice questions, and writing down everything you know on a blank sheet of paper."
+  },
+  {
+   "front": "What is the testing effect?",
+   "back": "Researchers have shown many times that the act of taking a test makes memories stronger."
+  },
+  {
+   "front": "What did Roediger and Karpicke's 2006 study find about retrieval practice versus rereading?",
+   "back": "Rereading looked better in the short term, but retrieval practice produced learning that lasted one week later."
+  },
+  {
+   "front": "What is the spacing effect?",
+   "back": "Spreading studying across several days leads to better long-term memory than cramming it into one session."
+  },
+  {
+   "front": "What is spaced repetition?",
+   "back": "It puts the spacing principle to work by gradually increasing the gaps between reviews."
+  },
+  {
+   "front": "What is blocked practice?",
+   "back": "It is when textbook exercises group problems by chapter so you solve many problems of the same type in a row, making practice feel smooth and easy."
+  },
+  {
+   "front": "What is interleaving?",
+   "back": "Interleaving means mixing different types of problems together instead of doing blocked practice."
+  },
+  {
+   "front": "What is elaboration?",
+   "back": "Elaboration means connecting new information to what you already know and explaining it in more detail."
+  },
+  {
+   "front": "What is dual coding theory?",
+   "back": "Allan Paivio's idea that memory has separate channels for verbal information and visual information."
+  },
+  {
+   "front": "Why should you find concrete examples for each concept?",
+   "back": "Finding at least one concrete example for each concept makes it easier both to remember and to apply."
+  },
+  {
+   "front": "What is metacognition?",
+   "back": "It is the ability to step back and examine your own thinking, having a fairly accurate sense of what you know and what you do not."
+  },
+  {
+   "front": "What role does sleep play in learning?",
+   "back": "Sleep is widely believed to play an important role in organizing what we learned during the day and turning it into lasting memory."
+  },
+  {
+   "front": "Which two techniques did John Dunlosky and his colleagues rate as the most useful methods in 2013?",
+   "back": "Practice testing (retrieval practice) and distributed practice (spaced repetition)."
+  },
+  {
+   "front": "What are desirable difficulties?",
+   "back": "They are methods like recalling, spacing, and mixed practice that feel harder than easy ones, making learning feel slower in the moment while making memory stronger in the end."
+  }
+ ],
+ "ms": 2359,
+ "inTokens": 2845,
+ "outTokens": 828,
+ "thinkTokens": 0,
+ "finish": "STOP",
+ "rt": 3.9,
+ "app": "ok"
+}

@@ -1,0 +1,76 @@
+{
+ "ok": true,
+ "cards": [
+  {
+   "front": "What did Hermann Ebbinghaus publish in 1885?",
+   "back": "He published a book about his experiments on memory and forgetting."
+  },
+  {
+   "front": "What happens to memory right after learning according to the forgetting curve?",
+   "back": "Memory fades fastest right after learning, and the rate of forgetting slows down as time goes on."
+  },
+  {
+   "front": "What is the fluency illusion?",
+   "back": "It is mistaking ease of reading for real understanding."
+  },
+  {
+   "front": "What is retrieval practice?",
+   "back": "It means bringing stored information back to mind by yourself."
+  },
+  {
+   "front": "What is the testing effect?",
+   "back": "It is the phenomenon where the act of taking a test makes memories stronger."
+  },
+  {
+   "front": "What did the 2006 study by Roediger and Karpicke find about retrieval practice versus rereading?",
+   "back": "Rereading scored slightly higher right after studying, but one week later the group that practiced recalling remembered more."
+  },
+  {
+   "front": "What is the spacing effect?",
+   "back": "Spreading study time across several days leads to better long-term memory than cramming into one session."
+  },
+  {
+   "front": "What is spaced repetition?",
+   "back": "It puts the spacing effect to work by gradually increasing the gaps between reviews."
+  },
+  {
+   "front": "What is blocked practice?",
+   "back": "It is when textbook exercises group problems by chapter so you solve many problems of the same type in a row."
+  },
+  {
+   "front": "What is interleaving?",
+   "back": "It means mixing different types of problems together instead of practicing the same type in a row."
+  },
+  {
+   "front": "What is elaboration?",
+   "back": "It means connecting new information to what you already know and explaining it in more detail."
+  },
+  {
+   "front": "What is dual coding theory?",
+   "back": "It is the idea proposed by Allan Paivio that memory has separate channels for verbal information and visual information."
+  },
+  {
+   "front": "Why is finding concrete examples useful?",
+   "back": "It makes abstract ideas easier both to remember and to apply."
+  },
+  {
+   "front": "What is metacognition?",
+   "back": "It is the ability to step back and examine your own thinking and know what you know and do not know."
+  },
+  {
+   "front": "According to John Dunlosky and his colleagues in 2013, which two methods were rated as the most useful?",
+   "back": "Practice testing (retrieval practice) and distributed practice (spaced repetition)."
+  },
+  {
+   "front": "Why do researchers call difficult study methods desirable difficulties?",
+   "back": "Because they make learning feel slower in the moment while making memory stronger in the end."
+  }
+ ],
+ "ms": 2345,
+ "inTokens": 2845,
+ "outTokens": 719,
+ "thinkTokens": 0,
+ "finish": "STOP",
+ "rt": 4.1,
+ "app": "ok"
+}

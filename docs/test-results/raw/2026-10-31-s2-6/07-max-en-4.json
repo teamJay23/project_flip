@@ -1,0 +1,60 @@
+{
+ "ok": true,
+ "cards": [
+  {
+   "front": "Who published a book about his experiments on memory and forgetting in 1885?",
+   "back": "The German psychologist Hermann Ebbinghaus."
+  },
+  {
+   "front": "What is a graph of the pattern of memory fading known as?",
+   "back": "The forgetting curve."
+  },
+  {
+   "front": "What is mistaking ease of reading for real understanding called?",
+   "back": "The fluency illusion."
+  },
+  {
+   "front": "What does retrieval mean?",
+   "back": "Bringing stored information back to mind by yourself."
+  },
+  {
+   "front": "What is the phenomenon where the act of taking a test makes memories stronger called?",
+   "back": "The testing effect."
+  },
+  {
+   "front": "What study method puts the spacing effect to work by gradually increasing the gaps between reviews?",
+   "back": "Spaced repetition."
+  },
+  {
+   "front": "What is it called when you mix different types of problems together instead of doing blocked practice?",
+   "back": "Interleaving."
+  },
+  {
+   "front": "What does elaboration mean?",
+   "back": "Connecting new information to what you already know and explaining it in more detail."
+  },
+  {
+   "front": "What is dual coding theory?",
+   "back": "Allan Paivio's idea that memory has separate channels for verbal information and visual information."
+  },
+  {
+   "front": "What is the ability to step back and examine your own thinking called?",
+   "back": "Metacognition."
+  },
+  {
+   "front": "Which two study techniques did John Dunlosky and his colleagues rate as the most useful methods in 2013?",
+   "back": "Practice testing (retrieval practice) and distributed practice (spaced repetition)."
+  },
+  {
+   "front": "What do researchers call difficulties that make learning feel slower in the moment while making memory stronger in the end?",
+   "back": "Desirable difficulties."
+  }
+ ],
+ "ms": 1783,
+ "inTokens": 2845,
+ "outTokens": 492,
+ "thinkTokens": 0,
+ "finish": "STOP",
+ "rt": 3.3,
+ "app": "ok"
+}

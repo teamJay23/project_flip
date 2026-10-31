@@ -1,0 +1,84 @@
+{
+ "ok": true,
+ "cards": [
+  {
+   "front": "Who published a book about his experiments on memory and forgetting in 1885?",
+   "back": "The German psychologist Hermann Ebbinghaus."
+  },
+  {
+   "front": "What is a graph of the pattern of memory fading known as?",
+   "back": "The forgetting curve."
+  },
+  {
+   "front": "What is the fluency illusion?",
+   "back": "Mistaking ease of reading for real understanding."
+  },
+  {
+   "front": "What does retrieval mean?",
+   "back": "Bringing stored information back to mind by yourself."
+  },
+  {
+   "front": "What is the testing effect?",
+   "back": "The finding that the act of taking a test makes memories stronger."
+  },
+  {
+   "front": "What did Roediger and Karpicke's 2006 study find about retrieval practice versus rereading over a week?",
+   "back": "The group that had practiced recalling remembered more one week later."
+  },
+  {
+   "front": "What is the spacing effect?",
+   "back": "Spreading studying across several days leads to better long-term memory than cramming into one session."
+  },
+  {
+   "front": "What does spaced repetition do?",
+   "back": "It gradually increases the gaps between reviews."
+  },
+  {
+   "front": "What is blocked practice?",
+   "back": "Solving many problems of the same type in a row because textbook exercises usually group problems by chapter."
+  },
+  {
+   "front": "What does interleaving mean?",
+   "back": "Mixing different types of problems together instead of blocked practice."
+  },
+  {
+   "front": "What does elaboration mean?",
+   "back": "Connecting new information to what you already know and explaining it in more detail."
+  },
+  {
+   "front": "What is dual coding theory?",
+   "back": "Allan Paivio's idea that memory has separate channels for verbal information and visual information."
+  },
+  {
+   "front": "Why is finding concrete examples useful for a concept?",
+   "back": "It makes it easier both to remember and to apply."
+  },
+  {
+   "front": "What is metacognition?",
+   "back": "The ability to step back and examine your own thinking."
+  },
+  {
+   "front": "What role does sleep play in learning?",
+   "back": "It plays an important role in organizing what we learned during the day and turning it into lasting memory."
+  },
+  {
+   "front": "Which methods did John Dunlosky and his colleagues rate as the most useful study techniques in 2013?",
+   "back": "Practice testing (retrieval practice) and distributed practice (spaced repetition)."
+  },
+  {
+   "front": "Which study techniques were judged to be less useful or useful only in certain situations by Dunlosky's review?",
+   "back": "Rereading, highlighting, and summarizing."
+  },
+  {
+   "front": "What are desirable difficulties?",
+   "back": "Study methods that feel harder in the moment while making memory stronger in the end."
+  }
+ ],
+ "ms": 2103,
+ "inTokens": 2845,
+ "outTokens": 750,
+ "thinkTokens": 0,
+ "finish": "STOP",
+ "rt": 3.9,
+ "app": "ok"
+}
