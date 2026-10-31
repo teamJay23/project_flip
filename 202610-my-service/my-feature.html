@@ -26,6 +26,9 @@
     background:radial-gradient(circle at 30% 20%, var(--bg-2), var(--bg-1) 70%);
     -webkit-tap-highlight-color: transparent;
   }
+  /* 학습 화면에서는 아래로 당겨 새로고침 막기 (새로고침하면 카드가 사라짐, 30 계획 6절 A)
+     Block pull-to-refresh on the study screen (a reload loses all cards) */
+  html.no-pull, html.no-pull body{ overscroll-behavior-y:none; }
 
   /* 화면 전체: 휴대폰 높이에 맞추고 iOS 안전 영역 피하기 / Full screen with iOS safe areas */
   .screen{
@@ -46,9 +49,16 @@
     font-size:14px; line-height:1.5;
   }
 
+  /* 입력 화면: 글자를 크게 해서 내용이 화면보다 길면 화면 안에서 스크롤 (30 계획 6절 B)
+     Input screen scrolls when large text makes the content taller than the screen */
+  .input-screen{ overflow-y:auto; }
+
   /* 입력창: 남은 높이를 채우고, 긴 글은 창 안에서 스크롤 / Fill remaining height, scroll inside */
   .input{
     flex:1;
+    /* 최소 5줄 (5줄 × 1.6em + 위아래 여백 32px + 테두리 2px). 글자를 키우면 같이 커짐
+       At least 5 lines (5 × 1.6em + 32px padding + 2px border); grows with font size */
+    min-height:calc(8em + 34px);
     width:100%;
     padding:16px;
     border:1px solid var(--line); border-radius:16px;
@@ -134,6 +144,7 @@
     padding:20px;
     border-radius:18px;
     overflow-y:auto;
+    overscroll-behavior:contain; /* 면 끝까지 밀어도 화면으로 번지지 않음 / Don't chain scroll to the page */
     -webkit-backface-visibility:hidden;
     backface-visibility:hidden;
     transition:visibility 0s linear 0s; /* 보일 때는 바로 / Show immediately */
@@ -198,7 +209,7 @@
 </head>
 <body>
   <!-- A. 입력 화면 / Input screen -->
-  <main class="screen" id="inputScreen">
+  <main class="screen input-screen" id="inputScreen">
     <h1 class="title">카드 만들기</h1>
     <p class="desc">학습할 텍스트를 붙여넣으면 카드로 만들어 드려요.</p>
 
@@ -466,6 +477,8 @@
     inputScreen.hidden = name !== 'input';
     loadingScreen.hidden = name !== 'loading';
     studyScreen.hidden = name !== 'study';
+    // 학습 화면일 때만 당겨서 새로고침 막기 / Block pull-to-refresh only on the study screen
+    document.documentElement.classList.toggle('no-pull', name === 'study');
   }
 
   // 다시 [카드 만들기]를 누를 수 있게 / Allow submitting again
